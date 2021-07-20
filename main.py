@@ -164,6 +164,20 @@ def search_character(name):
     return response.json()["data"]["Page"]
 
 
+def search_user(name):
+    variables = {
+        "search": name,
+        "page": 1,
+        "perPage": 25,
+    }
+
+    response = requests.post(
+        URL, json={"query": QUERY_SEARCH_USER, "variables": variables}
+    )
+
+    return response.json()["data"]["Page"]
+
+
 def get_user_score(userId, mediaId):
     variables = {"userId": userId, "mediaId": mediaId}
     response = requests.post(
@@ -480,8 +494,13 @@ async def search(msg, params):
                 result += character["name"]["native"]
 
             result += "\n"
+    elif search_type.lower() == "user":
+        found_users = search_user(search_string)
+
+        for user in found_users["users"]:
+            result += f'User {user["id"]} - {user["name"]}\n'
     else:
-        result = "Usage: `search [anime|manga|character|media] [name]'"
+        result = "Usage: `search [anime|manga|character|media|user] [name]'"
 
     await msg.channel.send(f"```{result}```")
 
@@ -540,6 +559,8 @@ async def show_character(msg, params):
         character["description"] = character["description"].replace("!~", "||")
         character["name"]["alternative"].append(character["name"]["native"])
 
+        # print(character)
+
         embed = discord.Embed(
             title=character["name"]["full"],
             description=character["description"],
@@ -549,7 +570,16 @@ async def show_character(msg, params):
         embed.set_thumbnail(url=character["image"]["large"])
         relations = " "
         for i in character["media"]["edges"]:
-            relations += f'• [{i["node"]["title"]["english"]}]({i["node"]["siteUrl"]}) [{i["characterRole"].capitalize()}]\n'
+            if i["node"]["title"]["english"] is not None:
+                relation = f'• [{i["node"]["title"]["english"]}]({i["node"]["siteUrl"]}) [{i["characterRole"].capitalize()}]\n'
+            else:
+                relation = f'• [{i["node"]["title"]["native"]}]({i["node"]["siteUrl"]}) [{i["characterRole"].capitalize()}]\n'
+
+            if len(relations) + len(relation) >= 1024:
+                break
+
+            relations += relation
+
         embed.add_field(name="Relations", value=relations, inline=False)
         embed.add_field(
             name="Aliases",

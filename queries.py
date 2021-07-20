@@ -237,7 +237,6 @@ query ($userId: Int, $mediaId: Int) {
     },
 }
 """
-
 QUERY_TOP_MEDIA = """
 query ($userId: Int, $page: Int, $perPage: Int) {
     Page (page: $page, perPage: $perPage) {
@@ -293,6 +292,16 @@ query ($search: String, $page: Int, $perPage: Int) {
                 full,
                 native,
             },
+        },
+    },
+}
+"""
+QUERY_SEARCH_USER = """
+query ($search: String, $page: Int, $perPage: Int) {
+    Page (page: $page, perPage: $perPage) {
+        users(search: $search) {
+            id,
+            name,
         },
     },
 }
