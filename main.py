@@ -6,6 +6,7 @@ import json
 import os
 from dotenv import load_dotenv
 import requests
+from discord.ext import commands
 import discord
 import markdownify
 from queries import *
@@ -187,19 +188,7 @@ def get_user_score(userId, mediaId):
     return response.json()["data"]["MediaList"]
 
 
-client = discord.Client()
-
-load_dotenv()
-prefix = os.getenv("PREFIX")
-
-
-@client.event
-async def on_ready():
-    print("We have logged in as {0.user}".format(client))
-    load_users()
-
-
-async def get_users_statuses(mediaId):
+def get_users_statuses(mediaId):
     result = {}
 
     query = """
@@ -266,10 +255,7 @@ query ($mediaId: Int) {
     return result_sort
 
 
-async def bot_get_media(msg):
-    media_type = msg.content[1: msg.content.find(" ")]
-    name = msg.content[msg.content.find(" "):]
-
+def bot_get_media(media_type, name):
     media = get_media(name, media_type)
     if media is None:
         embed = discord.Embed(
@@ -311,7 +297,8 @@ async def bot_get_media(msg):
         else:
             embed.add_field(name="Chapters", value=media["chapters"])
             embed.add_field(name="Volumes", value=media["volumes"])
-        embed.add_field(name="Format", value=media["format"])  # .capitalize())
+        # .capitalize())
+        embed.add_field(name="Format", value=media["format"])
         embed.add_field(
             name="Genres", value=" - ".join(media["genres"]), inline=False)
         embed.add_field(name="Description",
@@ -321,17 +308,104 @@ async def bot_get_media(msg):
         # for status in user_scores:
         #     embed.add_field(name=status, value=' | '.join(user_scores[status]),
         # inline=False)
-    await msg.channel.send(embed=embed)
+    return embed
 
 
-async def show_user(msg, name):
+load_dotenv()
+prefix = os.getenv("PREFIX")
+
+bot = commands.Bot(command_prefix=prefix, help_command=None)
+
+
+@bot.event
+async def on_ready():
+    print("We have logged in as {0.user}".format(bot))
+    load_users()
+
+
+@bot.command(
+    name="help", description="Displays this message.", help=prefix + "help (command)"
+)
+async def help(ctx, help_command=""):
+    help_text = {}
+
+    if help_command == "":
+        embed = discord.Embed(title="Help", color=DEFAULT_COLOR)
+        categories = []
+        for command in bot.commands:
+            if command.cog.__class__.__name__ not in categories:
+                categories.append(command.cog.__class__.__name__)
+
+        for category in categories:
+            help_text[category] = ""
+            for command in bot.commands:
+                if command.cog.__class__.__name__ == category:
+                    help_text[category] += f"`{command}` - {command.description}\n"
+
+        for category in categories:
+            if category == "NoneType":
+                embed.add_field(
+                    name="General (WIP)", value=help_text[category], inline=False
+                )
+            else:
+                embed.add_field(
+                    name=category, value=help_text[category], inline=False)
+
+        help_text = f"\nUse `{prefix}help [command]` to get more info on the command."
+        help_text += f"\nUse '{prefix}' before the command, dumbass."
+        embed.add_field(name="Info", value=help_text, inline=False)
+    else:
+        is_command = False
+        for command in bot.commands:
+            if command.name == help_command:
+                embed = discord.Embed(
+                    title=command.name,
+                    description=command.description,
+                    color=DEFAULT_COLOR,
+                )
+                embed.add_field(name="Usage", value=f"```{command.help}```")
+                is_command = True
+                break
+
+        if not is_command:
+            embed = discord.Embed(
+                title=help_command,
+                description=f"`{help_command}` is not a command.",
+                color=DEFAULT_COLOR,
+            )
+
+    await ctx.send(embed=embed)
+
+
+@bot.command(
+    name="anime",
+    description="Search for a specific anime using its name.",
+    help=prefix + "anime [name]",
+)
+async def anime(ctx, *name):
+    embed = bot_get_media("anime", " ".join(name))
+    await ctx.send(embed=embed)
+
+
+@bot.command(
+    name="manga",
+    description="Search for a specific manga using its name.",
+    help=prefix + "manga [name]",
+)
+async def manga(ctx, *name):
+    embed = bot_get_media("manga", " ".join(name))
+    await ctx.send(embed=embed)
+
+
+@bot.command(name="user", description="WIP", help=prefix + "user <user|mention>")
+async def user(ctx, name=None):
     try:
         name = users[name.strip("<@!>")]["name"]
     except:
         pass
 
     if name is None:
-        name = users[str(msg.author.id)]["name"]
+        name = users[str(ctx.message.author.id)]["name"]
 
     user_data = get_user(name)
 
@@ -396,27 +470,38 @@ async def show_user(msg, name):
         embed = discord.Embed(
             title="Not Found", description="):", color=DEFAULT_COLOR)
 
-    await msg.channel.send(embed=embed)
+    await ctx.send(embed=embed)
 
 
-async def link_user(msg):
-    if add_user(msg.author.id, msg.content[6:]):
-        await show_user(msg, msg.content[6:])
-        await msg.channel.send("Linked successfully")
+@bot.command(
+    name="link",
+    description="Links your discord account to an anilist user.",
+    help=prefix + "link [name]",
+)
+async def link(ctx, name):
+    if add_user(ctx.message.author.id, name):
+        await user(ctx, name)
+        await ctx.send("Linked successfully")
     else:
-        await msg.channel.send("Not Found")
+        await ctx.channel.send("Not Found")
 
 
-async def show_users(msg):
+@bot.command(
+    name="users", description="Shows all users currently linked.", help=prefix + "users"
+)
+async def show_users(ctx):
     result = []
     for i in users:
         result.append(users[i]["name"])
-    await msg.channel.send(
-        f'```Total linked users: {len(users)}\n{" | ".join(result)}```'
-    )
+    await ctx.send(f'```Total linked users: {len(users)}\n{" | ".join(result)}```')
 
 
-async def show_top(msg, name):
+@bot.command(
+    name="top",
+    description="Shows the top 10 of another user.",
+    help=prefix + "top [name|mention]",
+)
+async def top(ctx, name=None):
     try:
         name = users[name.strip("<@!>")]["name"]
     except:
@@ -424,7 +509,7 @@ async def show_top(msg, name):
 
     if name is None:
         try:
-            name = users[str(msg.author.id)]["name"]
+            name = users[str(ctx.message.author.id)]["name"]
         except:
             name = " "
 
@@ -454,18 +539,22 @@ async def show_top(msg, name):
         embed = discord.Embed(
             title="Not Found", description="):", color=DEFAULT_COLOR)
 
-    await msg.channel.send(embed=embed)
+    await ctx.send(embed=embed)
 
 
-async def search(msg, params):
-    try:
-        search_type, search_string = params.split(" ", 1)
-    except:
-        search_type = "None"
+@bot.command(
+    name="search",
+    description="Search for specific information. shows all results.",
+    help=prefix + "search [media|anime|manga|character|user] [name]",
+)
+async def search(msg, search_type=None, *search_string):
+    search_string = " ".join(search_string)
 
     result = ""
+    if search_type is None or not search_string:
+        result = "Usage: 'search [anime|manga|character|media|user] [name]'"
 
-    if search_type.lower() in ("media", "anime", "manga"):
+    elif search_type.lower() in ("media", "anime", "manga"):
         if search_type.lower() == "media":
             medias = search_media(search_string)
         elif search_type.lower() in ("anime", "manga"):
@@ -500,13 +589,18 @@ async def search(msg, params):
         for user in found_users["users"]:
             result += f'User {user["id"]} - {user["name"]}\n'
     else:
-        result = "Usage: `search [anime|manga|character|media|user] [name]'"
+        result = "Usage: 'search [anime|manga|character|media|user] [name]'"
 
     await msg.channel.send(f"```{result}```")
 
 
-async def user_score(msg, params):
-    name, media_name = params.split(" ", 1)
+@bot.command(
+    name="score",
+    description="Shows a user's score for a specific media.",
+    help=prefix + "score [user|mention] [name]",
+)
+async def score(ctx, name, *media_name):
+    media_name = " ".join(media_name)
 
     try:
         name = users[name.strip("<@!>")]["name"]
@@ -546,11 +640,16 @@ async def user_score(msg, params):
     else:
         embed = discord.Embed(title="Not found.",
                               description="):", color=DEFAULT_COLOR)
-    await msg.channel.send(embed=embed)
+    await ctx.send(embed=embed)
 
 
-async def show_character(msg, params):
-    character = get_character(params)
+@bot.command(
+    name="character",
+    description="Search for a specific character using its name.",
+    help=prefix + "character [name]",
+)
+async def show_character(ctx, *name):
+    character = get_character(" ".join(name))
 
     if character is not None:
         if len(character["description"]) >= 1024:
@@ -558,8 +657,6 @@ async def show_character(msg, params):
         character["description"] = character["description"].replace("~!", "||")
         character["description"] = character["description"].replace("!~", "||")
         character["name"]["alternative"].append(character["name"]["native"])
-
-        # print(character)
 
         embed = discord.Embed(
             title=character["name"]["full"],
@@ -592,39 +689,7 @@ async def show_character(msg, params):
         embed = discord.Embed(title="Not found.",
                               description="):", color=DEFAULT_COLOR)
 
-    await msg.channel.send(embed=embed)
+    await ctx.send(embed=embed)
 
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-
-    if not message.content.startswith(prefix):
-        return
-    if " " in message.content:
-        command, params = message.content.split(" ", 1)
-        command = command[1:].lower()
-    else:
-        command = message.content[1:]
-        params = None
-
-    if command in ("anime", "manga"):
-        await bot_get_media(message)
-    elif command == "link":
-        await link_user(message)
-    elif command == "user":
-        await show_user(message, params)
-    elif command == "users":
-        await show_users(message)
-    elif command == "top":
-        await show_top(message, params)
-    elif command == "score":
-        await user_score(message, params)
-    elif command == "search":
-        await search(message, params)
-    elif command == "character":
-        await show_character(message, params)
-
-
-client.run(os.getenv("TOKEN"))
+bot.run(os.getenv("TOKEN"))
