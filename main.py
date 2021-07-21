@@ -12,6 +12,7 @@ import markdownify
 from queries import *
 
 DEFAULT_COLOR = discord.Color.teal()
+COLOR_ERROR = discord.Color.red()
 
 
 users = {}
@@ -383,7 +384,14 @@ async def help(ctx, help_command=""):
     help=prefix + "anime [name]",
 )
 async def anime(ctx, *name):
-    embed = bot_get_media("anime", " ".join(name))
+    if not name:
+        embed = discord.Embed(
+            title="Incorrect usage",
+            description=f"Usage: `{prefix}anime [name]`",
+            color=COLOR_ERROR,
+        )
+    else:
+        embed = bot_get_media("anime", " ".join(name))
     await ctx.send(embed=embed)
 
 
@@ -393,7 +401,14 @@ async def anime(ctx, *name):
     help=prefix + "manga [name]",
 )
 async def manga(ctx, *name):
-    embed = bot_get_media("manga", " ".join(name))
+    if not name:
+        embed = discord.Embed(
+            title="Incorrect usage",
+            description=f"Usage: `{prefix}manga [name]`",
+            color=COLOR_ERROR,
+        )
+    else:
+        embed = bot_get_media("manga", " ".join(name))
     await ctx.send(embed=embed)
 
 
@@ -478,7 +493,16 @@ async def user(ctx, name=None):
     description="Links your discord account to an anilist user.",
     help=prefix + "link [name]",
 )
-async def link(ctx, name):
+async def link(ctx, name=None):
+    if name is None:
+        embed = discord.Embed(
+            title="Incorrect usage",
+            description=f"Usage: `{prefix}link [name]`",
+            color=COLOR_ERROR,
+        )
+        await ctx.send(embed=embed)
+        return
+
     if add_user(ctx.message.author.id, name):
         await user(ctx, name)
         await ctx.send("Linked successfully")
@@ -611,7 +635,7 @@ async def score(ctx, name, *media_name):
     media = get_media(media_name, "anime")
     media_manga = get_media(media_name, "manga")
 
-    if user_data is not None:
+    if user_data is not None and media is not None:
         score = get_user_score(user_data["id"], media["id"])
         if score is None:
             score = get_user_score(user_data["id"], media_manga["id"])
@@ -686,8 +710,11 @@ async def show_character(ctx, *name):
         embed.add_field(name="Anilist ID", value=character["id"])
         embed.add_field(name="Favourites", value=character["favourites"])
     else:
-        embed = discord.Embed(title="Not found.",
-                              description="):", color=DEFAULT_COLOR)
+        embed = discord.Embed(
+            title="Incorrect usage",
+            description=f"Usage: `{prefix}character [name]`",
+            color=COLOR_ERROR,
+        )
 
     await ctx.send(embed=embed)
 
