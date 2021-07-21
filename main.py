@@ -11,7 +11,7 @@ import discord
 import markdownify
 from queries import *
 
-DEFAULT_COLOR = discord.Color.teal()
+COLOR_DEFAULT = discord.Color.teal()
 COLOR_ERROR = discord.Color.red()
 
 
@@ -260,7 +260,7 @@ def bot_get_media(media_type, name):
     media = get_media(name, media_type)
     if media is None:
         embed = discord.Embed(
-            title="Not Found", description="):", color=DEFAULT_COLOR)
+            title="Not Found", description="):", color=COLOR_DEFAULT)
     else:
         # user_scores = await get_users_statuses(media['id'])
 
@@ -280,7 +280,7 @@ def bot_get_media(media_type, name):
             url=media["siteUrl"],
             description=f'{media["title"]["native"]} - '
             + f'{media["title"]["romaji"]}\n\n',
-            color=DEFAULT_COLOR,
+            color=COLOR_DEFAULT,
         )
         embed.set_thumbnail(url=media["coverImage"]["extraLarge"])
         embed.add_field(name="Mean Score", value=media["meanScore"])
@@ -331,7 +331,7 @@ async def help(ctx, help_command=""):
     help_text = {}
 
     if help_command == "":
-        embed = discord.Embed(title="Help", color=DEFAULT_COLOR)
+        embed = discord.Embed(title="Help", color=COLOR_DEFAULT)
         categories = []
         for command in bot.commands:
             if command.cog.__class__.__name__ not in categories:
@@ -362,7 +362,7 @@ async def help(ctx, help_command=""):
                 embed = discord.Embed(
                     title=command.name,
                     description=command.description,
-                    color=DEFAULT_COLOR,
+                    color=COLOR_DEFAULT,
                 )
                 embed.add_field(name="Usage", value=f"```{command.help}```")
                 is_command = True
@@ -372,7 +372,7 @@ async def help(ctx, help_command=""):
             embed = discord.Embed(
                 title=help_command,
                 description=f"`{help_command}` is not a command.",
-                color=DEFAULT_COLOR,
+                color=COLOR_DEFAULT,
             )
 
     await ctx.send(embed=embed)
@@ -483,7 +483,7 @@ async def user(ctx, name=None):
                         value=manga_stats_str, inline=False)
     else:
         embed = discord.Embed(
-            title="Not Found", description="):", color=DEFAULT_COLOR)
+            title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
 
@@ -503,11 +503,32 @@ async def link(ctx, name=None):
         await ctx.send(embed=embed)
         return
 
+    found_user = get_user(name)
+    for _user in users:
+        if users[_user]["name"] == found_user["name"]:
+            await ctx.send("User taken.")
+            return
+
     if add_user(ctx.message.author.id, name):
         await user(ctx, name)
         await ctx.send("Linked successfully")
     else:
         await ctx.channel.send("Not Found")
+
+
+@bot.command(name="unlink")
+async def unlink(ctx):
+    del users[str(ctx.message.author.id)]
+
+    with open("./users.json", "w") as file:
+        file.write(json.dumps(users))
+
+    load_users()
+
+    embed = discord.Embed(
+        title="User unlinked successfuly", description="Hurrah!", color=COLOR_DEFAULT
+    )
+    await ctx.send(embed=embed)
 
 
 @bot.command(
@@ -561,7 +582,7 @@ async def top(ctx, name=None):
         embed.set_thumbnail(url=user_data["avatar"]["large"])
     else:
         embed = discord.Embed(
-            title="Not Found", description="):", color=DEFAULT_COLOR)
+            title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
 
@@ -659,11 +680,11 @@ async def score(ctx, name, *media_name):
             embed.set_thumbnail(url=user_data["avatar"]["large"])
         else:
             embed = discord.Embed(
-                title="Not found.", description="):", color=DEFAULT_COLOR
+                title="Not found.", description="):", color=COLOR_DEFAULT
             )
     else:
         embed = discord.Embed(title="Not found.",
-                              description="):", color=DEFAULT_COLOR)
+                              description="):", color=COLOR_DEFAULT)
     await ctx.send(embed=embed)
 
 
@@ -686,7 +707,7 @@ async def show_character(ctx, *name):
             title=character["name"]["full"],
             description=character["description"],
             url=character["siteUrl"],
-            color=DEFAULT_COLOR,
+            color=COLOR_DEFAULT,
         )
         embed.set_thumbnail(url=character["image"]["large"])
         relations = " "
