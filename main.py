@@ -347,11 +347,6 @@ def bot_get_media(media_type, name):
     else:
         # user_scores = await get_users_statuses(media['id'])
 
-        # Shorten description
-        if len(media["description"]) >= 1024:
-            media["description"] = media["description"][:1020] + "..."
-        media["description"] = markdownify.markdownify(media["description"])
-
         if media["season"] is not None:
             media["season"] = f'{media["season"].capitalize()} {media["seasonYear"]}'
 
@@ -359,6 +354,17 @@ def bot_get_media(media_type, name):
         for i in media:
             if media[i] is None:
                 media[i] = "?"
+
+        if media["title"]["english"] is None:
+            media["title"]["english"] = media["title"]["romaji"]
+
+        if not media["genres"]:
+            media["genres"] = ["?"]
+
+        # Shorten description
+        if len(media["description"]) >= 1024:
+            media["description"] = media["description"][:1020] + "..."
+        media["description"] = markdownify.markdownify(media["description"])
 
         embed = discord.Embed(
             title=media["title"]["english"],
@@ -383,7 +389,6 @@ def bot_get_media(media_type, name):
         else:
             embed.add_field(name="Chapters", value=media["chapters"])
             embed.add_field(name="Volumes", value=media["volumes"])
-        # .capitalize())
         embed.add_field(name="Format", value=media["format"])
         embed.add_field(
             name="Genres", value=" - ".join(media["genres"]), inline=False)
@@ -399,6 +404,7 @@ def bot_get_media(media_type, name):
 
 load_dotenv()
 prefix = os.getenv("PREFIX")
+bot_channel = int(os.getenv("CHANNEL"))
 
 bot = commands.Bot(command_prefix=prefix, help_command=None)
 
@@ -420,6 +426,9 @@ async def help(ctx, help_command=""):
       ctx -- context.
       help_command -- Command to show help of.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     help_text = {}
 
     if help_command == "":
@@ -438,14 +447,14 @@ async def help(ctx, help_command=""):
         for category in categories:
             if category == "NoneType":
                 embed.add_field(
-                    name="General (WIP)", value=help_text[category], inline=False
+                    name="Commands", value=help_text[category], inline=False
                 )
             else:
                 embed.add_field(
                     name=category, value=help_text[category], inline=False)
 
-        help_text = f"\nUse `{prefix}help [command]` to get more info on the command."
-        help_text += f"\nUse '{prefix}' before the command, dumbass."
+        help_text = f"\nPrefix: `{prefix}`"
+        help_text += f"\nUse `{prefix}help [command]` to get more info on the command."
         embed.add_field(name="Info", value=help_text, inline=False)
     else:
         is_command = False
@@ -482,6 +491,9 @@ async def anime(ctx, *name):
       ctx -- Context.
       *name -- Anime name.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     if not name:
         embed = discord.Embed(
             title="Incorrect usage",
@@ -505,6 +517,9 @@ async def manga(ctx, *name):
       ctx -- Context
       *name -- Manga name.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     if not name:
         embed = discord.Embed(
             title="Incorrect usage",
@@ -528,6 +543,9 @@ async def user(ctx, name=None):
       ctx -- Context.
       name -- User's name.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     try:
         name = users[name.strip("<@!>")]["name"]
     except:
@@ -614,6 +632,9 @@ async def link(ctx, name=None):
       ctx -- Context.
       name -- AniList user's name.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     if name is None:
         embed = discord.Embed(
             title="Incorrect usage",
@@ -647,6 +668,9 @@ async def unlink(ctx):
     Keyword arguments:
       ctx -- Context.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     del users[str(ctx.message.author.id)]
 
     with open("./users.json", "w") as file:
@@ -669,6 +693,9 @@ async def show_users(ctx):
     Keyword arguments:
       ctx -- Context.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     result = []
     for i in users:
         result.append(users[i]["name"])
@@ -687,6 +714,9 @@ async def top(ctx, name=None):
       ctx -- Context.
       name -- User's name.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     try:
         name = users[name.strip("<@!>")]["name"]
     except:
@@ -709,6 +739,8 @@ async def top(ctx, name=None):
 
         description = ""
         for media in media_list:
+            if media["media"]["title"]["english"] is None:
+                media["media"]["title"]["english"] = media["media"]["title"]["romaji"]
             description += (
                 f'{media["media"]["title"]["english"]} - ' +
                 f'**{media["score"]}**\n'
@@ -740,6 +772,9 @@ async def search(ctx, search_type=None, *search_string):
       search_type -- Search type.
       *search_string -- Search query.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     search_string = " ".join(search_string)
 
     result = ""
@@ -799,6 +834,9 @@ async def score(ctx, name, *media_name):
       name -- User's name.
       *media_name -- Media name.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     media_name = " ".join(media_name)
 
     try:
@@ -854,6 +892,9 @@ async def show_character(ctx, *name):
       ctx -- Context.
       *name -- Character's name.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     character = get_character(" ".join(name))
 
     if character is not None:
