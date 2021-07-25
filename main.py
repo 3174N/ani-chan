@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 import requests
 from discord.ext import commands
 import discord
+import asyncio
 import markdownify
 from queries import *
 
@@ -95,7 +96,7 @@ def get_user(name):
     return None
 
 
-def add_user(id, name):
+def add_user(id, name, display_name):
     """Adds a user to the user list.
 
     Keyword arguments:
@@ -105,7 +106,11 @@ def add_user(id, name):
     user_data = get_user(name)
 
     if user_data is not None:
-        users[str(id)] = {"name": user_data["name"], "id": user_data["id"]}
+        users[str(id)] = {
+            "name": user_data["name"],
+            "id": user_data["id"],
+            "displayName": display_name,
+        }
 
         with open("./users.json", "w") as file:
             file.write(json.dumps(users))
@@ -288,7 +293,6 @@ query ($mediaId: Int) {
 
     query = query % media_query_combined
     print(query)
-    print(mediaId)
 
     variables = {"mediaId": mediaId}
     response = requests.post(
@@ -303,11 +307,11 @@ query ($mediaId: Int) {
                 score["status"] = "CURRENT"
 
             if score["status"] == "COMPLETED":
-                status = f'{value["name"]} **({score["score"]})**'
+                status = f'{value["displayName"]} **({score["score"]})**'
             elif score["status"] == "CURRENT":
-                status = f'{value["name"]} [{score["progress"]}]'
+                status = f'{value["displayName"]} [{score["progress"]}]'
             else:
-                status = value["name"]
+                status = value["displayName"]
 
             if score["status"] in result:
                 result[score["status"]].append(status)
@@ -315,9 +319,9 @@ query ($mediaId: Int) {
                 result[score["status"]] = [status]
         else:
             if "NOT ON LIST" in result:
-                result["NOT ON LIST"].append(value["name"])
+                result["NOT ON LIST"].append(value["displayName"])
             else:
-                result["NOT ON LIST"] = [value["name"]]
+                result["NOT ON LIST"] = [value["displayName"]]
 
     result_sort = {}
     if "COMPLETED" in result:
@@ -345,7 +349,7 @@ def bot_get_media(media_type, name):
         embed = discord.Embed(
             title="Not Found", description="):", color=COLOR_DEFAULT)
     else:
-        # user_scores = await get_users_statuses(media['id'])
+        # user_scores = get_users_statuses(media["id"])
 
         if media["season"] is not None:
             media["season"] = f'{media["season"].capitalize()} {media["seasonYear"]}'
@@ -395,10 +399,11 @@ def bot_get_media(media_type, name):
         embed.add_field(name="Description",
                         value=media["description"], inline=False)
 
-        embed.add_field(name="User Scores", value="Soon™")
+        # # embed.add_field(name="User Scores", value=" ")
         # for status in user_scores:
-        #     embed.add_field(name=status, value=' | '.join(user_scores[status]),
-        # inline=False)
+        #     embed.add_field(
+        #         name=status, value=" | ".join(user_scores[status]), inline=False
+        #     )
     return embed
 
 
@@ -473,7 +478,7 @@ async def help(ctx, help_command=""):
             embed = discord.Embed(
                 title=help_command,
                 description=f"`{help_command}` is not a command.",
-                color=COLOR_DEFAULT,
+                color=COLOR_ERROR,
             )
 
     await ctx.send(embed=embed)
@@ -580,11 +585,18 @@ async def user(ctx, name=None):
             stats_anime["genres"] = " / ".join(genres)
         else:
             stats_anime["genres"] = "Unknown"
+
+        time = int(stats_anime["minutesWatched"])
+        days = time // 1440
+        leftover_minutes = time % 1440
+        hours = leftover_minutes // 60
+        mins = time - (days * 1440) - (hours * 60)
+
         anime_stats_str = (
             f'- Total Entries: **{stats_anime["count"]}**\n'
             + f'- Mean Score: **{stats_anime["meanScore"]}**\n'
             + f'- Episodes Watched: **{stats_anime["episodesWatched"]}**\n'
-            + f'- Minutes Watched: **{stats_anime["minutesWatched"]}**\n'
+            + f"- Time Watched: **{days} days, {hours} hours and {mins} minutes**\n"
             + f'- Favorite Format: **{stats_anime["format"]}**\n'
             + f'- Favorite Genres: **{stats_anime["genres"]}**\n'
         )
@@ -650,7 +662,7 @@ async def link(ctx, name=None):
             await ctx.send("User taken.")
             return
 
-    if add_user(ctx.message.author.id, name):
+    if add_user(ctx.message.author.id, name, ctx.message.author.name):
         await user(ctx, name)
         await ctx.send("Linked successfully")
     else:
@@ -698,8 +710,69 @@ async def show_users(ctx):
 
     result = []
     for i in users:
-        result.append(users[i]["name"])
-    await ctx.send(f'```Total linked users: {len(users)}\n{" | ".join(result)}```')
+        result.append(f'{users[i]["displayName"]} - {users[i]["name"]}')
+
+    s = []
+    for i in range(0, int(len(result)) + 1, 25):
+        c = result[i: i + 25]
+        if c != []:
+            s.append(c)
+    result = []
+
+    for i in s:
+        result.append("\n".join(i))
+
+    embed = discord.Embed(
+        title=f"Total linked users: {len(users)}",
+        description=f"{result[0]}",
+        color=COLOR_DEFAULT,
+    )
+    message = await ctx.send(embed=embed)
+
+    pages = len(result)
+    cur_page = 1
+
+    await message.add_reaction("◀️")
+    await message.add_reaction("▶️")
+
+    def check(reaction, user):
+        return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
+        # This makes sure nobody except the command sender can interact with the "menu"
+
+    while True:
+        try:
+            reaction, user = await bot.wait_for("reaction_add", timeout=60, check=check)
+            # waiting for a reaction to be added - times out after x seconds, 60 in this
+            # example
+
+            if str(reaction.emoji) == "▶️" and cur_page != pages:
+                cur_page += 1
+                embed = discord.Embed(
+                    title=f"Total linked users: {len(users)}",
+                    description=f"{result[cur_page - 1]}",
+                    color=COLOR_DEFAULT,
+                )
+                await message.edit(embed=embed)
+                await message.remove_reaction(reaction, user)
+
+            elif str(reaction.emoji) == "◀️" and cur_page > 1:
+                cur_page -= 1
+                embed = discord.Embed(
+                    title=f"Total linked users: {len(users)}",
+                    description=f"{result[cur_page - 1]}",
+                    color=COLOR_DEFAULT,
+                )
+                await message.edit(embed=embed)
+                await message.remove_reaction(reaction, user)
+
+            else:
+                await message.remove_reaction(reaction, user)
+                # removes reactions if the user tries to go forward on the last page or
+                # backwards on the first page
+        except asyncio.TimeoutError:
+            await message.delete()
+            break
+            # ending the loop if user doesn't react after x seconds
 
 
 @bot.command(
