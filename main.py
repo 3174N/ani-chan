@@ -292,13 +292,14 @@ query ($mediaId: Int) {
                                                value["name"], str(value["id"]))
 
     query = query % media_query_combined
-    print(query)
+    # print(query)
 
     variables = {"mediaId": mediaId}
     response = requests.post(
         URL, json={"query": query, "variables": variables})
-    print(response.text)
+    # print(response.text)
 
+    avarege_score = 0
     for user in users:
         value = users[user]
         score = get_user_score(value["id"], mediaId)
@@ -308,6 +309,7 @@ query ($mediaId: Int) {
 
             if score["status"] == "COMPLETED":
                 status = f'{value["displayName"]} **({score["score"]})**'
+                avarege_score += score["score"]
             elif score["status"] == "CURRENT":
                 status = f'{value["displayName"]} [{score["progress"]}]'
             else:
@@ -324,6 +326,11 @@ query ($mediaId: Int) {
                 result["NOT ON LIST"] = [value["displayName"]]
 
     result_sort = {}
+
+    if "COMPLETED" in result:
+        avarege_score /= len(result["COMPLETED"])
+        result_sort["AVERAGE"] = avarege_score
+
     if "COMPLETED" in result:
         result_sort["COMPLETED"] = result["COMPLETED"]
     if "CURRENT" in result:
@@ -405,6 +412,11 @@ def bot_get_media(media_type, name):
         #         name=status, value=" | ".join(user_scores[status]), inline=False
         #     )
     return embed
+
+
+############
+# COMMANDS #
+############
 
 
 load_dotenv()
@@ -950,6 +962,69 @@ async def score(ctx, name, *media_name):
     else:
         embed = discord.Embed(title="Not found.",
                               description="):", color=COLOR_DEFAULT)
+    await ctx.send(embed=embed)
+
+
+@bot.command(
+    name="scores",
+    description="Gets user scores for a specific media",
+    help=prefix + "scores [anime|manga] [name]",
+)
+async def scores(ctx, media_type=None, *name):
+    """Shows linked users scores for a specific media.
+
+    Keyword arguments:
+      ctx -- Context.
+      media_type -- Media type.
+      *name -- Media name.
+    """
+    if media_type is None or not name:
+        embed = discord.Embed(
+            title="Incorrect usage",
+            description=f"Usage: `{prefix}scores [anime|manga] [name]`",
+            color=COLOR_ERROR,
+        )
+        await ctx.send(embed=embed)
+        return
+
+    if media_type.lower() == "anime":
+        media = get_media(" ".join(name), "anime")
+    elif media_type.lower() == "manga":
+        media = get_media(" ".join(name), "manga")
+    else:
+        embed = discord.Embed(
+            title="Incorrect usage",
+            description=f"Usage: `{prefix}scores [anime|manga] [name]`",
+            color=COLOR_ERROR,
+        )
+        await ctx.send(embed=embed)
+        return
+
+    if media is not None:
+        user_scores = get_users_statuses(media["id"])
+
+        if media["title"]["english"] is None:
+            media["title"]["english"] = media["title"]["romaji"]
+
+        embed = discord.Embed(
+            title=f'User scores for {media["title"]["english"]}', color=COLOR_DEFAULT
+        )
+        for status in user_scores:
+            if status == "AVERAGE":
+                embed.add_field(
+                    name="DISFA SCORE",
+                    value=str(int(user_scores[status])),
+                    inline=False,
+                )
+            else:
+                embed.add_field(
+                    name=status, value=" | ".join(user_scores[status]), inline=False
+                )
+        embed.set_thumbnail(url=media["coverImage"]["extraLarge"])
+    else:
+        embed = discord.Embed(title="Not found.",
+                              description="):", color=COLOR_ERROR)
+
     await ctx.send(embed=embed)
 
 
