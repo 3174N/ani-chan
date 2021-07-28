@@ -40,18 +40,20 @@ def string_to_hex(color):
     """
     if color == "blue":
         return discord.Color.blue()
-    if color == "purple":
+    elif color == "purple":
         return discord.Color.purple()
-    if color == "pink":
+    elif color == "pink":
         return discord.Color.magenta()
-    if color == "orange":
+    elif color == "orange":
         return discord.Color.orange()
-    if color == "red":
+    elif color == "red":
         return discord.Color.red()
-    if color == "green":
+    elif color == "green":
         return discord.Color.green()
-    if color == "gray":
+    elif color == "gray":
         return discord.Color.light_gray()
+    else:
+        return COLOR_DEFAULT
 
 
 def load_users():
@@ -300,18 +302,27 @@ query ($mediaId: Int) {
     # print(response.text)
 
     avarege_score = 0
+    scores = 0
     for user in users:
         value = users[user]
         score = get_user_score(value["id"], mediaId)
         if score is not None:
+            if score["score"] == 0:
+                score["score"] = "?"
+
             if score["status"] == "PAUSED":
                 score["status"] = "CURRENT"
 
             if score["status"] == "COMPLETED":
                 status = f'{value["displayName"]} **({score["score"]})**'
-                avarege_score += score["score"]
+                if score["score"] != "?":
+                    avarege_score += score["score"]
+                    scores += 1
             elif score["status"] == "CURRENT":
-                status = f'{value["displayName"]} [{score["progress"]}]'
+                status = f'{value["displayName"]} [{score["progress"]}] **({score["score"]})**'
+                if score["score"] != "?":
+                    avarege_score += score["score"]
+                    scores += 1
             else:
                 status = value["displayName"]
 
@@ -327,8 +338,8 @@ query ($mediaId: Int) {
 
     result_sort = {}
 
-    if "COMPLETED" in result:
-        avarege_score /= len(result["COMPLETED"])
+    if avarege_score != 0:
+        avarege_score /= scores
         result_sort["AVERAGE"] = avarege_score
 
     if "COMPLETED" in result:
@@ -376,6 +387,8 @@ def bot_get_media(media_type, name):
         if len(media["description"]) >= 1024:
             media["description"] = media["description"][:1020] + "..."
         media["description"] = markdownify.markdownify(media["description"])
+        media["description"] = media["description"].split(" ", 65)[0:65]
+        desciption = " ".join(media["description"]) + "..."
 
         embed = discord.Embed(
             title=media["title"]["english"],
@@ -387,7 +400,9 @@ def bot_get_media(media_type, name):
         embed.set_thumbnail(url=media["coverImage"]["extraLarge"])
         embed.add_field(name="Mean Score", value=media["meanScore"])
         embed.add_field(name="Type", value=media["type"].capitalize())
-        embed.add_field(name="Status", value=media["status"].capitalize())
+        embed.add_field(
+            name="Status", value=media["status"].capitalize().replace("_", " ")
+        )
         embed.add_field(name="Season", value=media["season"])
         embed.add_field(name="Popularity", value=media["popularity"])
         embed.add_field(name="Favourited",
@@ -403,8 +418,7 @@ def bot_get_media(media_type, name):
         embed.add_field(name="Format", value=media["format"])
         embed.add_field(
             name="Genres", value=" - ".join(media["genres"]), inline=False)
-        embed.add_field(name="Description",
-                        value=media["description"], inline=False)
+        embed.add_field(name="Description", value=desciption, inline=False)
 
         # # embed.add_field(name="User Scores", value=" ")
         # for status in user_scores:
@@ -431,6 +445,8 @@ async def on_ready():
     """Gets called when the bot goes online."""
     print("We have logged in as {0.user}".format(bot))
     load_users()
+
+    await bot.change_presence(activity=discord.Game(name="with Annie May's wheelchair"))
 
 
 @bot.command(
@@ -574,6 +590,7 @@ async def user(ctx, name=None):
     user_data = get_user(name)
 
     if user_data is not None:
+
         embed = discord.Embed(
             title=user_data["name"] + " - Anilist Statistics",
             url=user_data["siteUrl"],
@@ -583,7 +600,9 @@ async def user(ctx, name=None):
         if user_data["bannerImage"] is not None:
             embed.set_image(url=user_data["bannerImage"])
         if user_data["about"] is not None:
-            embed.add_field(name="About", value=user_data["about"])
+            if len(user_data["about"]) >= 1024:
+                user_data["about"] = user_data["about"][:1020] + "..."
+            # embed.add_field(name="About", value=user_data["about"])
 
         stats_anime = user_data["statistics"]["anime"]
         if stats_anime["formats"] != []:
@@ -724,9 +743,10 @@ async def show_users(ctx):
     for i in users:
         result.append(f'{users[i]["displayName"]} - {users[i]["name"]}')
 
+    # Split users
     s = []
-    for i in range(0, int(len(result)) + 1, 25):
-        c = result[i: i + 25]
+    for i in range(0, int(len(result)) + 1, 20):
+        c = result[i: i + 20]
         if c != []:
             s.append(c)
     result = []
@@ -748,16 +768,16 @@ async def show_users(ctx):
     await message.add_reaction("▶️")
 
     def check(reaction, user):
-        return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
         # This makes sure nobody except the command sender can interact with the "menu"
+        return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
 
     while True:
         try:
             reaction, user = await bot.wait_for("reaction_add", timeout=60, check=check)
-            # waiting for a reaction to be added - times out after x seconds, 60 in this
-            # example
+            # waiting for a reaction to be added - times out after 60 seconds
 
             if str(reaction.emoji) == "▶️" and cur_page != pages:
+                # Go to next page
                 cur_page += 1
                 embed = discord.Embed(
                     title=f"Total linked users: {len(users)}",
@@ -768,6 +788,7 @@ async def show_users(ctx):
                 await message.remove_reaction(reaction, user)
 
             elif str(reaction.emoji) == "◀️" and cur_page > 1:
+                # Go to previous page
                 cur_page -= 1
                 embed = discord.Embed(
                     title=f"Total linked users: {len(users)}",
@@ -778,21 +799,20 @@ async def show_users(ctx):
                 await message.remove_reaction(reaction, user)
 
             else:
-                await message.remove_reaction(reaction, user)
                 # removes reactions if the user tries to go forward on the last page or
                 # backwards on the first page
+                await message.remove_reaction(reaction, user)
         except asyncio.TimeoutError:
-            await message.delete()
-            break
             # ending the loop if user doesn't react after x seconds
+            break
 
 
 @bot.command(
     name="top",
     description="Shows the top 10 of another user.",
-    help=prefix + "top [name|mention]",
+    help=prefix + "top [top_count] <name|mention>",
 )
-async def top(ctx, name=None):
+async def top(ctx, top_count=10, name=None):
     """Shows a user's top media.
 
     Keyword arguments:
@@ -815,7 +835,8 @@ async def top(ctx, name=None):
 
     user_data = get_user(name)
     if user_data is not None:
-        variables = {"userId": user_data["id"], "page": 1, "perPage": 10}
+        variables = {"userId": user_data["id"],
+                     "page": 1, "perPage": top_count}
 
         response = requests.post(
             URL, json={"query": QUERY_TOP_MEDIA, "variables": variables}
@@ -832,7 +853,7 @@ async def top(ctx, name=None):
             )
 
         embed = discord.Embed(
-            title=f"{name}'s top 10",
+            title=f"{name}'s top {top_count}",
             description=description,
             color=string_to_hex(user_data["options"]["profileColor"]),
         )
@@ -933,6 +954,9 @@ async def score(ctx, name, *media_name):
     media = get_media(media_name, "anime")
     media_manga = get_media(media_name, "manga")
 
+    if media is None:
+        media = media_manga
+
     if user_data is not None and media is not None:
         score = get_user_score(user_data["id"], media["id"])
         if score is None:
@@ -978,6 +1002,9 @@ async def scores(ctx, media_type=None, *name):
       media_type -- Media type.
       *name -- Media name.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     if media_type is None or not name:
         embed = discord.Embed(
             title="Incorrect usage",
@@ -1087,6 +1114,60 @@ async def show_character(ctx, *name):
         )
 
     await ctx.send(embed=embed)
+
+
+@bot.command(
+    name="affinity",
+    description="TBD",
+    help=prefix + "affinity [name|mention] [name|mention]",
+)
+async def affinity(ctx, user1, user2):
+    if ctx.channel.id != bot_channel:
+        return
+
+    try:
+        user1 = users[user1.strip("<@!>")]["name"]
+    except:
+        pass
+    try:
+        user2 = users[user2.strip("<@!>")]["name"]
+    except:
+        pass
+
+    user1_data = get_user(user1)
+    user2_data = get_user(user2)
+
+    if user1_data is not None and user2_data is not None:
+        variables1 = {"userId": user1_data["id"], "page": 1, "perPage": 50}
+        variables2 = {"userId": user2_data["id"], "page": 1, "perPage": 50}
+
+        response = requests.post(
+            URL, json={"query": QUERY_TOP_MEDIA, "variables": variables1}
+        )
+        media_list1 = response.json()["data"]["Page"]["mediaList"]
+        response = requests.post(
+            URL, json={"query": QUERY_TOP_MEDIA, "variables": variables2}
+        )
+        media_list2 = response.json()["data"]["Page"]["mediaList"]
+
+        # print(media_list1)
+        # print(media_list2)
+
+        medias1 = medias2 = []
+        for i in media_list1:
+            medias1.append(i["media"])
+        for i in media_list2:
+            medias2.append(i["media"])
+
+        for i in medias1:
+            if i in medias2:
+                print(i)
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    await ctx.message.add_reaction("❓")
+    print(error)
 
 
 bot.run(os.getenv("TOKEN"))

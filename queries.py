@@ -91,7 +91,7 @@ query ($id: Int) {
 """
 QUERY_MEDIA = """
 query ($search: String) {
-    Media (search: $search, type: %s) {
+    Media (search: $search, type: %s, genre_not_in: ["hentai"]) {
         title {
             english,
             native,
@@ -121,7 +121,7 @@ query ($search: String) {
 """
 QUERY_MEDIA_ID = """
 query ($id: Int) {
-    Media (id: $id, type: %s) {
+    Media (id: $id, type: %s, genre_not_in: ["hentai"]) {
         title {
             english,
             native,
@@ -256,7 +256,7 @@ query ($userId: Int, $page: Int, $perPage: Int) {
 QUERY_SEARCH_MEDIA = """
 query ($search: String, $page: Int, $perPage: Int) {
     Page (page: $page, perPage: $perPage) {
-        media (search: $search) {
+        media (search: $search, genre_not_in: ["hentai"]) {
             id,
             title {
                 english,
@@ -271,7 +271,7 @@ query ($search: String, $page: Int, $perPage: Int) {
 QUERY_SEARCH_MEDIA_TYPE = """
 query ($search: String, $page: Int, $perPage: Int) {
     Page (page: $page, perPage: $perPage) {
-        media (search: $search, type: %s) {
+        media (search: $search, type: %s, genre_not_in: ["hentai"]) {
             id,
             title {
                 english,
