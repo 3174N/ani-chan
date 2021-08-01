@@ -247,9 +247,9 @@ query ($userId: Int, $page: Int, $perPage: Int) {
                     romaji,
                     native,
                 },
-                type,
             },
             score (format: POINT_100),
+            type,
         },
     },
 }
