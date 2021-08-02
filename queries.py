@@ -42,6 +42,67 @@ query ($search: String) {
         options {
             profileColor,
         },
+        favourites {
+            anime (page: 1, perPage: 5){
+                edges {
+                    node {
+                        title {
+                            english,
+                            romaji,
+                            native,
+                        },
+                        id,
+                        siteUrl,
+                    },
+                },
+            },
+            manga (page: 1, perPage: 5){
+                edges {
+                    node {
+                        title{
+                            english,
+                            romaji,
+                            native,
+                        },
+                        id,
+                        siteUrl,
+                    },
+                },
+            },
+            characters (page: 1, perPage: 5){
+                edges {
+                    node {
+                        name {
+                            full,
+                            native,
+                        },
+                        id,
+                        siteUrl,
+                    },
+                },
+            },
+            staff (page: 1, perPage: 5){
+                edges {
+                    node{
+                        name {
+                            full,
+                            native,
+                        },
+                        id,
+                        siteUrl,
+                    },
+                },
+            },
+            studios (page: 1, perPage: 5){
+                edges {
+                    node{
+                        name,
+                        id,
+                        siteUrl,
+                    },
+                },
+            },
+        },
     },
 }
 """
@@ -85,6 +146,67 @@ query ($id: Int) {
         },
         options {
             profileColor,
+        },
+        favourites {
+            anime (page: 1, perPage: 5){
+                edges {
+                    node {
+                        title {
+                            english,
+                            romaji,
+                            native,
+                        },
+                        id,
+                        siteUrl,
+                    },
+                },
+            },
+            manga (page: 1, perPage: 5){
+                edges {
+                    node {
+                        title{
+                            english,
+                            romaji,
+                            native,
+                        },
+                        id,
+                        siteUrl,
+                    },
+                },
+            },
+            characters (page: 1, perPage: 5){
+                edges {
+                    node{
+                        name {
+                            full,
+                            native,
+                        },
+                        id,
+                        siteUrl,
+                    },
+                },
+            },
+            staff (page: 1, perPage: 5){
+                edges {
+                    node{
+                        name {
+                            full,
+                            native,
+                        },
+                        id,
+                        siteUrl,
+                    },
+                },
+            },
+            studios (page: 1, perPage: 5){
+                edges {
+                    node{
+                        name,
+                        id,
+                        siteUrl,
+                    },
+                },
+            },
         },
     },
 }

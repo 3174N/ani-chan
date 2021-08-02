@@ -498,7 +498,15 @@ async def help(ctx, help_command=""):
                     description=command.description,
                     color=COLOR_DEFAULT,
                 )
-                embed.add_field(name="Usage", value=f"```{command.help}```")
+                embed.add_field(
+                    name="Usage", value=f"```{command.help}```", inline=False
+                )
+                if command.aliases:
+                    embed.add_field(
+                        name="Aliases",
+                        value=f"`{'` | `'.join(command.aliases)}`",
+                        inline=False,
+                    )
                 is_command = True
                 break
 
@@ -1131,7 +1139,7 @@ async def show_character(ctx, *name):
     description="TBD",
     help=prefix + "affinity [name|mention] [name|mention]",
 )
-async def affinity(ctx, user1, user2):
+async def affinity(ctx, user1, user2):  # TODO
     if ctx.channel.id != bot_channel:
         return
 
@@ -1171,7 +1179,96 @@ async def affinity(ctx, user1, user2):
 
         for i in medias1:
             if i in medias2:
-                print(i)
+                print(i, ":", i in medias1 and i in medias2)
+
+
+@bot.command(
+    name="favourites",
+    description="Shows a user's favourites.",
+    help=prefix + "favourites [name|mention]",
+    aliases=["favorites"],
+)
+async def favorites(ctx, name=None):
+    """Shows a user's favourites.
+
+    Keyword arguments:
+      ctx -- Context.
+      name -- User's name.
+    """
+    if ctx.channel.id != bot_channel:
+        return
+
+    try:
+        name = users[name.strip("<@!>")]["id"]
+    except:
+        pass
+
+    if name is None:
+        try:
+            name = users[str(ctx.message.author.id)]["id"]
+        except:
+            name = " "
+
+    user = get_user(name)
+    if user is not None:
+        embed = discord.Embed(
+            title=user["name"] + "'s favourites",
+            color=string_to_hex(user["options"]["profileColor"]),
+        )
+
+        # Create embed strings
+        anime = ""
+        manga = ""
+        characters = ""
+        staff = ""
+        studios = ""
+        for node in user["favourites"]["anime"]["edges"]:
+            media = node["node"]
+
+            if media["title"]["english"] is None:
+                media["title"]["english"] = media["title"]["romaji"]
+            anime += f'• [{media["title"]["english"]}]({media["siteUrl"]}) *({media["id"]})*\n'
+
+        for node in user["favourites"]["manga"]["edges"]:
+            media = node["node"]
+
+            if media["title"]["english"] is None:
+                media["title"]["english"] = media["title"]["romaji"]
+            manga += f'• [{media["title"]["english"]}]({media["siteUrl"]}) *({media["id"]})*\n'
+        for node in user["favourites"]["characters"]["edges"]:
+            media = node["node"]
+
+            if media["name"]["full"] is None:
+                media["name"]["full"] = media["name"]["native"]
+            characters += (
+                f'• [{media["name"]["full"]}]({media["siteUrl"]}) *({media["id"]})*\n'
+            )
+        for node in user["favourites"]["staff"]["edges"]:
+            media = node["node"]
+
+            if media["name"]["full"] is None:
+                media["name"]["full"] = media["name"]["native"]
+            staff += (
+                f'• [{media["name"]["full"]}]({media["siteUrl"]}) *({media["id"]})*\n'
+            )
+        for node in user["favourites"]["studios"]["edges"]:
+            media = node["node"]
+
+            studios += f'• [{media["name"]}]({media["siteUrl"]}) *({media["id"]})*\n'
+
+        # Add feilds if strings are not empty
+        if anime != "":
+            embed.add_field(name="Anime", value=anime, inline=False)
+        if manga != "":
+            embed.add_field(name="Mangas", value=manga, inline=False)
+        if characters != "":
+            embed.add_field(name="Characters", value=characters, inline=False)
+        if staff != "":
+            embed.add_field(name="Staff", value=staff, inline=False)
+        if studios != "":
+            embed.add_field(name="Studios", value=studios, inline=False)
+
+    await ctx.send(embed=embed)
 
 
 @bot.event
