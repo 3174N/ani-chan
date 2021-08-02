@@ -323,6 +323,8 @@ query ($mediaId: Int) {
                 if score["score"] != "?":
                     avarege_score += score["score"]
                     scores += 1
+            elif score["status"] == "DROPPED":
+                status = f'{value["displayName"]} [{score["progress"]}]'
             else:
                 status = value["displayName"]
 
@@ -1188,7 +1190,7 @@ async def affinity(ctx, user1, user2):  # TODO
     help=prefix + "favourites [name|mention]",
     aliases=["favorites"],
 )
-async def favorites(ctx, name=None):
+async def favorites(ctx, name=None):  # TODO: errors
     """Shows a user's favourites.
 
     Keyword arguments:
@@ -1267,6 +1269,9 @@ async def favorites(ctx, name=None):
             embed.add_field(name="Staff", value=staff, inline=False)
         if studios != "":
             embed.add_field(name="Studios", value=studios, inline=False)
+    else:
+        embed = discord.Embed(
+            title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
 
