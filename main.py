@@ -40,20 +40,19 @@ def string_to_hex(color):
     """
     if color == "blue":
         return discord.Color.blue()
-    elif color == "purple":
+    if color == "purple":
         return discord.Color.purple()
-    elif color == "pink":
+    if color == "pink":
         return discord.Color.magenta()
-    elif color == "orange":
+    if color == "orange":
         return discord.Color.orange()
-    elif color == "red":
+    if color == "red":
         return discord.Color.red()
-    elif color == "green":
+    if color == "green":
         return discord.Color.green()
-    elif color == "gray":
+    if color == "gray":
         return discord.Color.light_gray()
-    else:
-        return COLOR_DEFAULT
+    return COLOR_DEFAULT
 
 
 def load_users():
@@ -761,7 +760,9 @@ async def show_users(ctx):
 
     result = []
     for i in users:
-        result.append(f'{users[i]["displayName"]} - {users[i]["name"]}')
+        result.append(
+            f'**Discord:** {users[i]["displayName"]} - **Anilist:** [{users[i]["name"]}](https://anilist.co/user/{users[i]["id"]})'
+        )
 
     # Split users
     s = []
