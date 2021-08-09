@@ -15,6 +15,7 @@ import discord
 import asyncio
 import markdownify
 from queries import *
+import time
 
 #############
 # VARIABLES #
@@ -22,6 +23,8 @@ from queries import *
 
 COLOR_DEFAULT = discord.Color.teal()
 COLOR_ERROR = discord.Color.red()
+
+BOT_VERSION = "1.0.0"
 
 
 users = {}
@@ -487,8 +490,12 @@ async def help(ctx, help_command=""):
                 embed.add_field(
                     name=category, value=help_text[category], inline=False)
 
-        help_text = f"\nPrefix: `{prefix}`"
+        coming_soon = "affinity | DisFA top | Better user scores"
+        embed.add_field(name="Coming Soon", value=coming_soon, inline=False)
+
+        help_text = f"\n**Prefix:** `{prefix}`"
         help_text += f"\nUse `{prefix}help [command]` to get more info on the command."
+        help_text += f"\n**Version:** {BOT_VERSION}"
         embed.add_field(name="Info", value=help_text, inline=False)
     else:
         is_command = False
@@ -1275,6 +1282,27 @@ async def favorites(ctx, name=None):  # TODO: errors
             title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
+
+
+# async def get_user_score_async(userId, mediaId):
+#     """Gets a user score on a specific media.
+#     Keyword arguments:
+#       userId -- User ID.
+#       mediaId -- Media ID.
+#     """
+#     variables = {"userId": userId, "mediaId": mediaId}
+#     response = requests.post(
+#         URL, json={"query": QUERY_MEDIALIST, "variables": variables}
+#     )
+
+#     return response.json()["data"]["MediaList"]
+
+
+# @bot.command(name="test")
+# async def test(ctx, name):
+#     for user in users:
+#         user = users[user]
+#         await get_user_score_async(user["id"], name)
 
 
 @bot.event
