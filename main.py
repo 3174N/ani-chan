@@ -1033,6 +1033,8 @@ async def scores(ctx, media_type=None, *name):
     if ctx.channel.id != bot_channel:
         return
 
+    await ctx.send("This might take some time...")
+
     if media_type is None or not name:
         embed = discord.Embed(
             title="Incorrect usage",
@@ -1307,6 +1309,9 @@ async def favorites(ctx, name=None):  # TODO: errors
 
 @bot.event
 async def on_command_error(ctx, error):
+    if ctx.channel.id != bot_channel:
+        return
+
     await ctx.message.add_reaction("❓")
     print(error)
 
