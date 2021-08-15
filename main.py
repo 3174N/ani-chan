@@ -8,14 +8,16 @@ Anilist discord bot.
 
 import json
 import os
+import asyncio
+import time
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
 from dotenv import load_dotenv
 import requests
 from discord.ext import commands
 import discord
-import asyncio
 import markdownify
 from queries import *
-import time
 
 #############
 # VARIABLES #
@@ -29,6 +31,12 @@ BOT_VERSION = "1.0.0"
 
 users = {}
 
+USERS_FILE_ID = "1CFzxCBeNXA9hnX3v8VA35Wd3CFlI0qR0"
+USERS_FOLDER_ID = "11ruUI4Er5yMeTy8NGM2tt0XLxEVL38rZ"
+
+gauth = GoogleAuth()
+gauth.CommandLineAuth()
+drive = GoogleDrive(gauth)
 
 #############
 # FUNCTIONS #
@@ -61,9 +69,9 @@ def string_to_hex(color):
 def load_users():
     """Loads users from users file."""
     global users
-    with open("./users.json", "r") as file:
-        if file.read != "":
-            users = json.loads(file.read())
+
+    users_file = drive.CreateFile({"id": USERS_FILE_ID})
+    users = json.loads(users_file.GetContentString("users.json"))
 
 
 def clear_users():
@@ -116,8 +124,11 @@ def add_user(id, name, display_name):
             "displayName": display_name,
         }
 
-        with open("./users.json", "w") as file:
-            file.write(json.dumps(users))
+        # Create a GoogleDriveFile instance with title 'test.txt'.
+        users_file = drive.CreateFile({"id": USERS_FILE_ID})
+        # Set content of the file from the given string.
+        users_file.SetContentString(json.dumps(users))
+        users_file.Upload()
 
         load_users()
 
@@ -535,6 +546,9 @@ async def ping(ctx):
     Keyword arguments:
       ctx -- Context.
     """
+    if ctx.channel.id != bot_channel:
+        return
+
     await ctx.send("Pong!\n{:d} ms".format(int(round(bot.latency, 3) * 1000)))
 
 
