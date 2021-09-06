@@ -7,6 +7,8 @@ Anilist discord bot.
 ###########
 
 import json
+import traceback
+import sys
 import os
 import asyncio
 import time
@@ -26,7 +28,7 @@ from queries import *
 COLOR_DEFAULT = discord.Color.teal()
 COLOR_ERROR = discord.Color.red()
 
-BOT_VERSION = "1.1.1"
+BOT_VERSION = "1.1.2"
 
 
 users = {}
@@ -276,7 +278,10 @@ def get_user_score(userId, mediaId):
         URL, json={"query": QUERY_MEDIALIST, "variables": variables}
     )
 
-    return response.json()["data"]["MediaList"]
+    try:
+        return response.json()["data"]["MediaList"]
+    except:
+        return None # TODO: better solution
 
 
 def get_users_statuses(mediaId):
@@ -318,6 +323,7 @@ query ($mediaId: Int) {
     for user in users:
         value = users[user]
         score = get_user_score(value["id"], mediaId)
+        # time.sleep(0.001)
         if score is not None:
             if score["score"] == 0:
                 score["score"] = "?"
@@ -459,9 +465,15 @@ bot = commands.Bot(command_prefix=prefix,
 async def on_ready():
     """Gets called when the bot goes online."""
     print("We have logged in as {0.user}".format(bot))
+    for guild in bot.guilds:
+        print(guild.id)
     load_users()
 
     await bot.change_presence(activity=discord.Game(name="with Annie May's wheelchair"))
+
+@bot.event
+async def on_message(message):
+    await bot.process_commands(message)
 
 
 @bot.command(
@@ -1162,52 +1174,52 @@ async def show_character(ctx, *name):
     await ctx.send(embed=embed)
 
 
-@bot.command(
-    name="affinity",
-    description="TBD",
-    help=prefix + "affinity [name|mention] [name|mention]",
-)
-async def affinity(ctx, user1, user2):  # TODO
-    if ctx.channel.id != bot_channel:
-        return
+# @bot.command(
+#     name="affinity",
+#     description="TBD",
+#     help=prefix + "affinity [name|mention] [name|mention]",
+# )
+# async def affinity(ctx, user1, user2):  # TODO
+#     if ctx.channel.id != bot_channel:
+#         return
 
-    try:
-        user1 = users[user1.strip("<@!>")]["name"]
-    except:
-        pass
-    try:
-        user2 = users[user2.strip("<@!>")]["name"]
-    except:
-        pass
+#     try:
+#         user1 = users[user1.strip("<@!>")]["name"]
+#     except:
+#         pass
+#     try:
+#         user2 = users[user2.strip("<@!>")]["name"]
+#     except:
+#         pass
 
-    user1_data = get_user(user1)
-    user2_data = get_user(user2)
+#     user1_data = get_user(user1)
+#     user2_data = get_user(user2)
 
-    if user1_data is not None and user2_data is not None:
-        variables1 = {"userId": user1_data["id"], "page": 1, "perPage": 50}
-        variables2 = {"userId": user2_data["id"], "page": 1, "perPage": 50}
+#     if user1_data is not None and user2_data is not None:
+#         variables1 = {"userId": user1_data["id"], "page": 1, "perPage": 50}
+#         variables2 = {"userId": user2_data["id"], "page": 1, "perPage": 50}
 
-        response = requests.post(
-            URL, json={"query": QUERY_TOP_MEDIA, "variables": variables1}
-        )
-        media_list1 = response.json()["data"]["Page"]["mediaList"]
-        response = requests.post(
-            URL, json={"query": QUERY_TOP_MEDIA, "variables": variables2}
-        )
-        media_list2 = response.json()["data"]["Page"]["mediaList"]
+#         response = requests.post(
+#             URL, json={"query": QUERY_TOP_MEDIA, "variables": variables1}
+#         )
+#         media_list1 = response.json()["data"]["Page"]["mediaList"]
+#         response = requests.post(
+#             URL, json={"query": QUERY_TOP_MEDIA, "variables": variables2}
+#         )
+#         media_list2 = response.json()["data"]["Page"]["mediaList"]
 
-        # print(media_list1)
-        # print(media_list2)
+#         # print(media_list1)
+#         # print(media_list2)
 
-        medias1 = medias2 = []
-        for i in media_list1:
-            medias1.append(i["media"])
-        for i in media_list2:
-            medias2.append(i["media"])
+#         medias1 = medias2 = []
+#         for i in media_list1:
+#             medias1.append(i["media"])
+#         for i in media_list2:
+#             medias2.append(i["media"])
 
-        for i in medias1:
-            if i in medias2:
-                print(i, ":", i in medias1 and i in medias2)
+#         for i in medias1:
+#             if i in medias2:
+#                 print(i, ":", i in medias1 and i in medias2)
 
 
 @bot.command(
@@ -1316,20 +1328,11 @@ async def favorites(ctx, name=None):  # TODO: errors
 #     return response.json()["data"]["MediaList"]
 
 
-# @bot.command(name="test")
-# async def test(ctx, name):
-#     for user in users:
-#         user = users[user]
-#         await get_user_score_async(user["id"], name)
-
-
-@bot.event
 async def on_command_error(ctx, error):
     if ctx.channel.id != bot_channel:
         return
 
     await ctx.message.add_reaction("❓")
-    print(error)
-
+    traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
 bot.run(os.getenv("TOKEN"))
