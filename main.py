@@ -28,9 +28,10 @@ from queries import *
 COLOR_DEFAULT = discord.Color.teal()
 COLOR_ERROR = discord.Color.red()
 
-BOT_VERSION = "1.1.2"
+BOT_VERSION = "1.2.1"
 
 
+users_glob = {}
 users = {}
 
 USERS_FILE_ID = "1CFzxCBeNXA9hnX3v8VA35Wd3CFlI0qR0"
@@ -40,6 +41,11 @@ gauth = GoogleAuth()
 gauth.CommandLineAuth()
 drive = GoogleDrive(gauth)
 
+users_file = drive.CreateFile({"id": USERS_FILE_ID})
+users_file.SetContentString(json.dumps(
+    {"638134760031518722" :{"530008656666951680": {"name": "3174N", "id": 5433257, "displayName": "3174N"}, "265867928073797632": {"name": "KillStealKS", "id": 5267926, "displayName": "KillStealKS"}, "396209173840527362": {"name": "Netanel2002", "id": 5137102, "displayName": "Netanel Michaeli"}, "634285948594683905": {"name": "InariK", "id": 5282070, "displayName": "Inari"}, "380734391229480961": {"name": "saarGG", "id": 724900, "displayName": "saar.G"}, "435081083197849600": {"name": "Nirco2000", "id": 420539, "displayName": "Nir"}, "577200704310083587": {"name": "HaDaRhZ", "id": 857487, "displayName": "HaDaR"}, "481447783346208768": {"name": "OriTavor", "id": 768956, "displayName": "OriTavor"}, "392664474697596929": {"name": "Karishbestboi", "id": 5450675, "displayName": "omer"}, "290492696156438538": {"name": "AdirSama", "id": 379493, "displayName": "Kaito"}, "315714445135314944": {"name": "DonaldZurump", "id": 472801, "displayName": "Donald_Zuramp"}, "332070964349370370": {"name": "Mushhhhroom", "id": 698542, "displayName": "Mushroom DA BIG"}, "503772808418164757": {"name": "Ginko196", "id": 685892, "displayName": "Ginko"}, "733726808725389413": {"name": "datte", "id": 862142, "displayName": "dattebayo"}, "660903876995579949": {"name": "Idk19", "id": 576409, "displayName": "I don\'t know"}, "282846902603481100": {"name": "LeonYehuda", "id": 598367, "displayName": "_Leon_"}, "763363514709704705": {"name": "mayaitz", "id": 682775, "displayName": "mayaitz"}, "531599464515764224": {"name": "BlurryFace0", "id": 149399, "displayName": "BlurryFace"}, "615307643539423232": {"name": "Ofekk", "id": 5379004, "displayName": "Ofekk"}, "393740265879240714": {"name": "Gintamannnnnnnn", "id": 443730, "displayName": "TheSovietMan"}, "589744869560287242": {"name": "kohemy", "id": 5282057, "displayName": "kohemy"}, "440089359610413056": {"name": "NotaFortniteGirl", "id": 744437, "displayName": "\u05dc\u05d0 \u05d9\u05dc\u05d3\u05ea \u05e4\u05d5\u05e8\u05d8\u05e0\u05d9\u05d9\u05d8"}, "334234614031843340": {"name": "ShookieSeybah", "id": 462882, "displayName": "Seybah"}, "414839110436519941": {"name": "popcorn123", "id": 776485, "displayName": "POPCORN"}, "634710092025167882": {"name": "YYonatan", "id": 5390490, "displayName": "\ud835\udc0b\ud835\udc17\ud835\udc08\ud835\udc17"}, "660907914088808448": {"name": "Hadar", "id": 450496, "displayName": "Hadar.s"}, "763782049953480754": {"name": "TheQuietKid", "id": 5118809, "displayName": "The quiet kid"}, "532647682389442563": {"name": "YourBoySplinter", "id": 372737, "displayName": "Splinter"}, "432495148891635735": {"name": "OfirB", "id": 5286020, "displayName": "Ofir_B"}, "245095196230942720": {"name": "CraziCow", "id": 491396, "displayName": "CraziCow"}, "124533618650513410": {"name": "FFFridge", "id": 5230456, "displayName": "Fridge"}, "657268566667689994": {"name": "SkyXPlayPro", "id": 960214, "displayName": "IlayOwO"}, "477451195431125002": {"name": "Sinly", "id": 454573, "displayName": "Sinlyz"}, "428205544503771138": {"name": "gabrielto", "id": 5160445, "displayName": "G4briel"}, "795684482761621535": {"name": "StrawberryCakeGirl", "id": 5236825, "displayName": "LadyStrawberry"}, "507856271622275072": {"name": "Nakano", "id": 449028, "displayName": "White"}, "646017419348803585": {"name": "NyanOtaku", "id": 5246391, "displayName": "NyanOtaku"}, "610023295420465156": {"name": "TheWoodsman", "id": 5533046, "displayName": "TheHighwayBenj"}, "710561086893719553": {"name": "BlackWidow", "id": 767615, "displayName": "\ud835\udc01\ud835\udc25\ud835\udc1a\ud835\udc1c\ud835\udc24 \ud835\udc30\ud835\udc22\ud835\udc1d\ud835\udc28\ud835\udc30"}, "853181328928931850": {"name": "Noam1", "id": 932432, "displayName": "NoAM"}, "525327651536371741": {"name": "Kofifo64", "id": 801913, "displayName": "kofifo64"}, "691976692847214622": {"name": "yosef5656", "id": 5142552, "displayName": "Yosef"}, "414412493830488095": {"name": "SoulKing", "id": 256059, "displayName": "Soul_King"}, "311429672510685186": {"name": "rocketstorm", "id": 438327, "displayName": "rocketstorm"}, "408612835283697664": {"name": "Gil139", "id": 5274913, "displayName": "Ringo"}, "332226939894890496": {"name": "BeastSmoke", "id": 483808, "displayName": "BeastSmoke"}, "302118523335999489": {"name": "Saf6D9Douch", "id": 925379, "displayName": "Saf D. Douch"}, "817047680122486804": {"name": "zohar", "id": 5348219, "displayName": "ddk14"}, "426469365811118082": {"name": "KFCsaro", "id": 440880, "displayName": "Saro"}}}
+))
+users_file.Upload()
 #############
 # FUNCTIONS #
 #############
@@ -70,16 +76,12 @@ def string_to_hex(color):
 
 def load_users():
     """Loads users from users file."""
-    global users
+    global users_glob
 
     users_file = drive.CreateFile({"id": USERS_FILE_ID})
-    users = json.loads(users_file.GetContentString("users.json"))
-
-
-def clear_users():
-    """Deletes all users."""
-    open("./users.json", "w").close()  # Clear file
-    load_users()
+    users_glob = json.loads(users_file.GetContentString("users.json"))
+    if isinstance(users_glob, str):
+        users_glob = eval(users_glob)
 
 
 def get_user(name):
@@ -110,7 +112,7 @@ def get_user(name):
     return None
 
 
-def add_user(id, name, display_name):
+def add_user(guild, id, name, display_name):
     """Adds a user to the user list.
 
     Keyword arguments:
@@ -127,8 +129,9 @@ def add_user(id, name, display_name):
         }
 
         # Update users
+        users_glob[str(guild)] = users
         users_file = drive.CreateFile({"id": USERS_FILE_ID})
-        users_file.SetContentString(json.dumps(users))
+        users_file.SetContentString(json.dumps(users_glob))
         users_file.Upload()
 
         load_users()
@@ -466,13 +469,19 @@ async def on_ready():
     """Gets called when the bot goes online."""
     print("We have logged in as {0.user}".format(bot))
     for guild in bot.guilds:
-        print(guild.id)
+        print(guild.id, '-', guild.name)
+              
     load_users()
 
     await bot.change_presence(activity=discord.Game(name="with Annie May's wheelchair"))
 
 @bot.event
 async def on_message(message):
+    global users, users_glob
+    if str(message.channel.guild.id) not in users_glob:
+        users_glob[str(message.channel.guild.id)] = {}
+    users = users_glob[str(message.channel.guild.id)]
+
     await bot.process_commands(message)
 
 
@@ -488,7 +497,7 @@ async def help(ctx, help_command=""):
     """
     if ctx.channel.id != bot_channel:
         return
-
+    
     help_text = {}
 
     if help_command == "":
@@ -513,7 +522,7 @@ async def help(ctx, help_command=""):
                 embed.add_field(
                     name=category, value=help_text[category], inline=False)
 
-        coming_soon = "affinity | DisFA top | Better user scores"
+        coming_soon = "Affinity | Server top | Better user scores"
         embed.add_field(name="Coming Soon", value=coming_soon, inline=False)
 
         help_text = f"\n**Prefix:** `{prefix}`"
@@ -745,7 +754,7 @@ async def link(ctx, name=None):
             await ctx.send("User taken.")
             return
 
-    if add_user(ctx.message.author.id, name, ctx.message.author.name):
+    if add_user(ctx.message.guild.id, ctx.message.author.id, name, ctx.message.author.name):
         await user(ctx, name)
         await ctx.send("Linked successfully")
     else:
@@ -767,11 +776,13 @@ async def unlink(ctx):
         return
 
     del users[str(ctx.message.author.id)]
+    users_glob[(ctx.message.channel.guild.id)] = users
 
     # Update users
     users_file = drive.CreateFile({"id": USERS_FILE_ID})
-    users_file.SetContentString(json.dumps(users))
+    users_file.SetContentString(json.dumps(users_glob))
     users_file.Upload()
+
 
     load_users()
 
