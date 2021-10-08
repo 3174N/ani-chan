@@ -28,7 +28,7 @@ from queries import *
 COLOR_DEFAULT = discord.Color.teal()
 COLOR_ERROR = discord.Color.red()
 
-BOT_VERSION = "1.3.0"
+BOT_VERSION = "1.3.1"
 
 
 users_glob = {}
@@ -363,10 +363,18 @@ query ($mediaId: Int) {
                 if score["score"] != "?":
                     avarege_score += score["score"]
                     scores += 1
+            elif score["status"] == "REPEATING":
+                status = f'{value["displayName"]} [{score["progress"]}/__R__] **({score["score"]})**'
+                if score["score"] != "?":
+                    avarege_score += score["score"]
+                    scores += 1
             elif score["status"] == "DROPPED":
                 status = f'{value["displayName"]} [{score["progress"]}]'
             else:
                 status = value["displayName"]
+
+            if score["status"] == "REPEATING":
+                score["status"] = "CURRENT"
 
             if score["status"] in result:
                 result[score["status"]].append(status)
