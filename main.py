@@ -28,12 +28,16 @@ from queries import *
 COLOR_DEFAULT = discord.Color.teal()
 COLOR_ERROR = discord.Color.red()
 
-BOT_VERSION = "1.3.1"
+BOT_VERSION = "1.3.2"
 
 
 users_glob = {}
 users = {}
 settings = {}
+
+# How many episodes / chapters are needed for dropped scores
+# to enter server score. (0 for no minimum)
+MIN_DROP = 5
 
 USERS_FILE_ID = "1CFzxCBeNXA9hnX3v8VA35Wd3CFlI0qR0"
 SETTINGS_FILE_ID = "1if67MR1AsS2PZhmr4jbEe28vc0yFUAkc"
@@ -378,6 +382,10 @@ query ($mediaId: Int) {
                     scores += 1
             elif score["status"] == "DROPPED":
                 status = f'{value["displayName"]} [{score["progress"]}] **({score["score"]})**'
+                if score["progress"] >= MIN_DROP:
+                    if score["score"] != "?":
+                        avarege_score += score["score"]
+                        scores += 1
             else:
                 status = value["displayName"]
 
@@ -1166,6 +1174,8 @@ async def scores(ctx, media_type=None, *name):
                     name=status, value=" | ".join(user_scores[status]), inline=False
                 )
         embed.set_thumbnail(url=media["coverImage"]["extraLarge"])
+        embed.set_footer(
+            text=f'Dropped scores affect server score only if progress is {MIN_DROP} or more.')
     else:
         embed = discord.Embed(title="Not found.",
                               description="):", color=COLOR_ERROR)
