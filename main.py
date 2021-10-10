@@ -43,7 +43,7 @@ gauth = GoogleAuth()
 gauth.CommandLineAuth()
 drive = GoogleDrive(gauth)
 
-### Manual overwrite to users.json / config.json (if needed)
+# Manual overwrite to users.json / config.json (if needed)
 # users_file = drive.CreateFile({"id": USERS_FILE_ID})
 # users_file.SetContentString(json.dumps(
 #     {"638134760031518722": {"530008656666951680": {"name": "3174N", "id": 5433257, "displayName": "3174N"}, "265867928073797632": {"name": "KillStealKS", "id": 5267926, "displayName": "KillStealKS"}, "396209173840527362": {"name": "Netanel2002", "id": 5137102, "displayName": "Netanel Michaeli"}, "634285948594683905": {"name": "InariK", "id": 5282070, "displayName": "Inari"}, "380734391229480961": {"name": "saarGG", "id": 724900, "displayName": "saar.G"}, "435081083197849600": {"name": "Nirco2000", "id": 420539, "displayName": "Nir"}, "481447783346208768": {"name": "OriTavor", "id": 768956, "displayName": "OriTavor"}, "392664474697596929": {"name": "Karishbestboi", "id": 5450675, "displayName": "omer"}, "290492696156438538": {"name": "AdirSama", "id": 379493, "displayName": "Kaito"}, "315714445135314944": {"name": "DonaldZurump", "id": 472801, "displayName": "Donald_Zuramp"}, "503772808418164757": {"name": "Ginko196", "id": 685892, "displayName": "Ginko"}, "733726808725389413": {"name": "datte", "id": 862142, "displayName": "dattebayo"}, "660903876995579949": {"name": "Idk19", "id": 576409, "displayName": "I don't know"}, "282846902603481100": {"name": "LeonYehuda", "id": 598367, "displayName": "_Leon_"}, "763363514709704705": {"name": "mayaitz", "id": 682775, "displayName": "mayaitz"}, "531599464515764224": {"name": "BlurryFace0", "id": 149399, "displayName": "BlurryFace"}, "615307643539423232": {"name": "Ofekk", "id": 5379004, "displayName": "fw.Ofek"}, "393740265879240714": {"name": "Gintamannnnnnnn", "id": 443730, "displayName": "TheSovietMan"}, "589744869560287242": {"name": "kohemy", "id": 5282057, "displayName": "kohemy"}, "440089359610413056": {"name": "NotaFortniteGirl", "id": 744437, "displayName": "\u05dc\u05d0 \u05d9\u05dc\u05d3\u05ea \u05e4\u05d5\u05e8\u05d8\u05e0\u05d9\u05d9\u05d8"}, "334234614031843340": {"name": "ShookieSeybah", "id": 462882, "displayName": "Seybah"}, "414839110436519941": {"name": "popcorn123", "id": 776485, "displayName": "POPCORN"}, "634710092025167882": {"name": "YYonatan", "id": 5390490, "displayName": "\ud835\udc0b\ud835\udc17\ud835\udc08\ud835\udc17"}, "660907914088808448": {"name": "Hadar", "id": 450496, "displayName": "Hadar.s"}, "763782049953480754": {"name": "TheQuietKid", "id": 5118809, "displayName": "The quiet kid"}, "532647682389442563": {"name": "YourBoySplinter", "id": 372737, "displayName": "Splinter"}, "432495148891635735": {"name": "OfirB", "id": 5286020, "displayName": "Ofir_B"}, "245095196230942720": {"name": "CraziCow", "id": 491396, "displayName": "CraziCow"}, "124533618650513410": {"name": "FFFridge", "id": 5230456, "displayName": "Fridge"}, "657268566667689994": {"name": "SkyXPlayPro", "id": 960214, "displayName": "IlayOwO"}, "477451195431125002": {"name": "Sinly", "id": 454573, "displayName": "Sinlyz"}, "428205544503771138": {"name": "gabrielto", "id": 5160445, "displayName": "G4briel"}, "795684482761621535": {"name": "StrawberryCakeGirl", "id": 5236825, "displayName": "LadyStrawberry"}, "507856271622275072": {"name": "Nakano", "id": 449028, "displayName": "White"}, "646017419348803585": {"name": "NyanOtaku", "id": 5246391, "displayName": "NyanOtaku"}, "610023295420465156": {"name": "TheWoodsman", "id": 5533046, "displayName": "TheHighwayBenj"}, "710561086893719553": {"name": "BlackWidow", "id": 767615, "displayName": "\ud835\udc01\ud835\udc25\ud835\udc1a\ud835\udc1c\ud835\udc24 \ud835\udc30\ud835\udc22\ud835\udc1d\ud835\udc28\ud835\udc30"}, "853181328928931850": {"name": "Noam1", "id": 932432, "displayName": "NoAM"}, "525327651536371741": {"name": "Kofifo64", "id": 801913, "displayName": "kofifo64"}, "691976692847214622": {"name": "yosef5656", "id": 5142552, "displayName": "Yosef"}, "414412493830488095": {"name": "SoulKing", "id": 256059, "displayName": "Soul_King"}, "311429672510685186": {"name": "rocketstorm", "id": 438327, "displayName": "rocketstorm"}, "408612835283697664": {"name": "Gil139", "id": 5274913, "displayName": "Ringo"}, "332226939894890496": {"name": "BeastSmoke", "id": 483808, "displayName": "BeastSmoke"}, "302118523335999489": {"name": "Saf6D9Douch", "id": 925379, "displayName": "Saf D. Douch"}, "817047680122486804": {"name": "zohar", "id": 5348219, "displayName": "ddk14"}, "426469365811118082": {"name": "KFCsaro", "id": 440880, "displayName": "Saro"}, "478298718391762956": {"name": "karadi", "id": 420578, "displayName": "Karadi"}, "332070964349370370": {"name": "Mushhhhroom", "id": 698542, "displayName": "Mushroom DA BIG"}, "577200704310083587": {"name": "HaDaRhZ", "id": 857487, "displayName": "HaDaR"}, "379260834502672384": {"name": "Star00gazer", "id": 901450, "displayName": "Star0_0gazer"}}, "867985175697567744": {"332070964349370370": {"name": "Mushhhhroom", "id": 698542, "displayName": "Mushroom"}, "530008656666951680": {"name": "3174N", "id": 5433257, "displayName": "3174N"}, "577200704310083587": {"name": "HaDaRhZ", "id": 857487, "displayName": "HaDaR"}, "265867928073797632": {"name": "KillStealKS", "id": 5267926, "displayName": "KillStealKS"}, "290492696156438538": {"name": "AdirSama", "id": 379493, "displayName": "Kaito"}, "634285948594683905": {"name": "InariK", "id": 5282070, "displayName": "Inari"}, "481447783346208768": {"name": "OriTavor", "id": 768956, "displayName": "OriTavor"}, "396209173840527362": {"name": "Netanel2002", "id": 5137102, "displayName": "Netanel Michaeli"}, "610023295420465156": {"name": "TheWoodsman", "id": 5533046, "displayName": "TheHighwayBenj"}, "435081083197849600": {"name": "Nirco2000", "id": 420539, "displayName": "Nir"}}}
@@ -288,7 +288,7 @@ def search_user(name):
     return response.json()["data"]["Page"]
 
 
-def get_user_score(userId, mediaId):
+def get_user_score(userId, mediaId, repeat=0):
     """Gets a user score on a specific media.
 
     Keyword arguments:
@@ -303,7 +303,13 @@ def get_user_score(userId, mediaId):
     try:
         return response.json()["data"]["MediaList"]
     except:
-        return None # TODO: better solution
+        print(f"Error - {userId}\n{response.json()}")
+        if repeat <= 5:
+            time.sleep(1)
+            # TODO: better solution
+            return get_user_score(userId, mediaId, repeat+1)
+        else:
+            return None
 
 
 def get_users_statuses(mediaId):
@@ -350,9 +356,6 @@ query ($mediaId: Int) {
             if score["score"] == 0:
                 score["score"] = "?"
 
-            if score["status"] == "PAUSED":
-                score["status"] = "CURRENT"
-
             if score["status"] == "COMPLETED":
                 status = f'{value["displayName"]} **({score["score"]})**'
                 if score["score"] != "?":
@@ -368,12 +371,19 @@ query ($mediaId: Int) {
                 if score["score"] != "?":
                     avarege_score += score["score"]
                     scores += 1
+            elif score["status"] == "PAUSED":
+                status = f'{value["displayName"]} [{score["progress"]}/__P__] **({score["score"]})**'
+                if score["score"] != "?":
+                    avarege_score += score["score"]
+                    scores += 1
             elif score["status"] == "DROPPED":
-                status = f'{value["displayName"]} [{score["progress"]}]'
+                status = f'{value["displayName"]} [{score["progress"]}] **({score["score"]})**'
             else:
                 status = value["displayName"]
 
             if score["status"] == "REPEATING":
+                score["status"] = "CURRENT"
+            if score["status"] == "PAUSED":
                 score["status"] = "CURRENT"
 
             if score["status"] in result:
@@ -507,6 +517,7 @@ async def on_ready():
 
     await bot.change_presence(activity=discord.Game(name="with Annie May's wheelchair"))
 
+
 @bot.event
 async def on_message(message):
     global users, users_glob, settings
@@ -614,11 +625,11 @@ async def ping(ctx):
 async def set_channels(ctx, *channels):
     if not ctx.message.author.guild_permissions.administrator:
         return
-    
+
     global settings
-    
+
     channels_id = []
-    
+
     for channel in channels:
         channel = channel.strip('<#>')
         channels_id.append(channel)
@@ -627,7 +638,7 @@ async def set_channels(ctx, *channels):
     update_settings()
 
     await ctx.send('Channels set successfuly!')
-    
+
 
 @bot.command(
     name="anime",
@@ -828,7 +839,6 @@ async def unlink(ctx):
     users_file = drive.CreateFile({"id": USERS_FILE_ID})
     users_file.SetContentString(json.dumps(users_glob))
     users_file.Upload()
-
 
     load_users()
 
@@ -1363,7 +1373,8 @@ async def on_command_error(ctx, error):
     print("sadasd")
 
     await ctx.message.add_reaction("❓")
-    traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+    traceback.print_exception(
+        type(error), error, error.__traceback__, file=sys.stderr)
 
 # Run bot
 with open('./.token') as file:
