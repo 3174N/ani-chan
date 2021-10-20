@@ -28,7 +28,7 @@ from queries import *
 COLOR_DEFAULT = discord.Color.teal()
 COLOR_ERROR = discord.Color.red()
 
-BOT_VERSION = "1.3.2"
+BOT_VERSION = "1.3.3"
 
 
 users_glob = {}
@@ -37,7 +37,8 @@ settings = {}
 
 # How many episodes / chapters are needed for dropped scores
 # to enter server score. (0 for no minimum)
-MIN_DROP = 5
+MIN_DROP_ANIME = 5
+MIN_DROP_MANGA = 25
 
 USERS_FILE_ID = "1CFzxCBeNXA9hnX3v8VA35Wd3CFlI0qR0"
 SETTINGS_FILE_ID = "1if67MR1AsS2PZhmr4jbEe28vc0yFUAkc"
@@ -316,7 +317,7 @@ def get_user_score(userId, mediaId, repeat=0):
             return None
 
 
-def get_users_statuses(mediaId):
+def get_users_statuses(mediaId, media_type):
     """Gets the statuses / scores of all the connected users on a specific media.
 
     Keyword arguments:
@@ -382,7 +383,7 @@ query ($mediaId: Int) {
                     scores += 1
             elif score["status"] == "DROPPED":
                 status = f'{value["displayName"]} [{score["progress"]}] **({score["score"]})**'
-                if score["progress"] >= MIN_DROP:
+                if (media_type == "ANIME" and score["progress"] >= MIN_DROP_ANIME) or (media_type == "MANGA" and score["progress"] >= MIN_DROP_MANGA):
                     if score["score"] != "?":
                         avarege_score += score["score"]
                         scores += 1
@@ -435,7 +436,7 @@ def bot_get_media(media_type, name):
         embed = discord.Embed(
             title="Not Found", description="):", color=COLOR_DEFAULT)
     else:
-        # user_scores = get_users_statuses(media["id"])
+        # user_scores = get_users_statuses(media["id"], media["type"])
 
         if media["season"] is not None:
             media["season"] = f'{media["season"].capitalize()} {media["seasonYear"]}'
@@ -1154,7 +1155,7 @@ async def scores(ctx, media_type=None, *name):
         return
 
     if media is not None:
-        user_scores = get_users_statuses(media["id"])
+        user_scores = get_users_statuses(media["id"], media["type"])
 
         if media["title"]["english"] is None:
             media["title"]["english"] = media["title"]["romaji"]
@@ -1175,7 +1176,7 @@ async def scores(ctx, media_type=None, *name):
                 )
         embed.set_thumbnail(url=media["coverImage"]["extraLarge"])
         embed.set_footer(
-            text=f'Dropped scores affect server score only if progress is {MIN_DROP} or more.')
+            text=f'Dropped scores affect server score only if progress is {MIN_DROP_ANIME if media["type"] == "ANIME" else MIN_DROP_MANGA} or more.')
     else:
         embed = discord.Embed(title="Not found.",
                               description="):", color=COLOR_ERROR)
