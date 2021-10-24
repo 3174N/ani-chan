@@ -11,10 +11,10 @@ You can search for anime and manga, compare server scores, and more.
 To use the bot, you can:
 
 - [Invite it to your server](https://discord.com/api/oauth2/authorize?client_id=861173907644743680&permissions=137439308864&scope=bot)
-- [Run it yourself](#running)
+- [Run it yourself](#running-the-bot)
 - [Join the Dev Server](https://discord.gg/gGVDR6Mxu4) and use it there
 
-## Running the bot {#running}
+## Running the bot
 
 See INSTALLATION.md<sup>WIP</sup>
 
