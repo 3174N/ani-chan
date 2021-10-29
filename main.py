@@ -1089,6 +1089,8 @@ async def score(ctx, name, *media_name):
         if score is None:
             score = get_user_score(user_data["id"], media_manga["id"])
             media = media_manga
+        if media["title"]["english"] is None:
+            media["title"]["english"] = media["title"]["romaji"]
         if score is not None:
             embed = discord.Embed(
                 title=f'{user_data["name"]}\'s score for {media["title"]["english"]}',
