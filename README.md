@@ -21,5 +21,5 @@ See INSTALLATION.md<sup>WIP</sup>
 
 ## License
 
-This repository is licensed under the [GPL-3 license](LICENSE), which allows you to do whatever you want with the code.
+The code in this repository is licensed under the [GPL-3 license](LICENSE), which basically allows you to do whatever you want with it.
 Feel free to clone, fork, make changes to the code, etc'. PRs are welcome!
