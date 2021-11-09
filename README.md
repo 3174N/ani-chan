@@ -1,6 +1,7 @@
 # AnilistBot
 
 [![Discord](https://img.shields.io/discord/867985175697567744)](https://discord.gg/gGVDR6Mxu4)
+
 AnilistBot - A Discord bot for browsing AniList.
 
 ## Overview
