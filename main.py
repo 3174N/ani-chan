@@ -28,7 +28,7 @@ from queries import *
 COLOR_DEFAULT = discord.Color.teal()
 COLOR_ERROR = discord.Color.red()
 
-BOT_VERSION = "1.3.3"
+BOT_VERSION = "1.4.0"
 
 
 users_glob = {}
@@ -315,6 +315,19 @@ def get_user_score(userId, mediaId, repeat=0):
             return get_user_score(userId, mediaId, repeat+1)
         else:
             return None
+
+
+def get_seasonal(season, year):
+    variables = {
+        "year": year,
+        "page": 1,
+        "perPage": 25
+    }
+
+    response = requests.post(
+        URL, json={"query": QUERY_SEASONAL % season, "variables": variables})
+
+    return response.json()["data"]["Page"]
 
 
 def get_users_statuses(mediaId, media_type):
@@ -1381,10 +1394,45 @@ async def favorites(ctx, name=None):  # TODO: errors
     await ctx.send(embed=embed)
 
 
+@bot.command(
+    name="seasonal",
+    description="",
+    help=prefix + "seasonal [season] [year]",
+    aliases=["season"]
+)
+async def seasonal(ctx, season=None, year=None):
+    if season is None or year is None:
+        embed = discord.Embed(
+            title="Incorrect usage",
+            description=f"Usage: `{prefix}seasonal [season] [year]`",
+            color=COLOR_ERROR,
+        )
+        await ctx.send(embed=embed)
+        return
+
+    if season.upper() not in ("FALL", "WINTER", "SPRING", "SUMMER"):
+        embed = discord.Embed(
+            title="Invalid season",
+            description="Valid seasons are: `FALL|WINTER|SPRING|SUMMER`",
+            color=COLOR_ERROR,
+        )
+        await ctx.send(embed=embed)
+        return
+
+    medias = get_seasonal(season.upper(), year)
+
+    result = "```"
+    for media in medias["media"]:
+        if media["title"]["english"] is None:
+            media["title"]["english"] = media["title"]["romaji"]
+        result += f'{media["id"]} - {media["title"]["english"]}\n'
+    result += "```"
+
+    await ctx.send(result)
+
+
 @bot.event
 async def on_command_error(ctx, error):
-    print("sadasd")
-
     await ctx.message.add_reaction("❓")
     traceback.print_exception(
         type(error), error, error.__traceback__, file=sys.stderr)

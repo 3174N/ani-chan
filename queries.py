@@ -429,3 +429,16 @@ query ($search: String, $page: Int, $perPage: Int) {
     },
 }
 """
+QUERY_SEASONAL = """
+query ($year: Int, $page: Int, $perPage: Int) {
+    Page(page: $page, perPage: $perPage) {
+        media(season: %s, seasonYear: $year) {
+            title {
+                english
+                romaji
+            },
+            id,
+        }
+    }
+}
+"""
