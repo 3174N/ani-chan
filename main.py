@@ -317,11 +317,11 @@ def get_user_score(userId, mediaId, repeat=0):
             return None
 
 
-def get_seasonal(season, year):
+def get_seasonal(season, year, page, perPage):
     variables = {
         "year": year,
-        "page": 1,
-        "perPage": 25
+        "page": page,
+        "perPage": perPage
     }
 
     response = requests.post(
@@ -1396,7 +1396,7 @@ async def favorites(ctx, name=None):  # TODO: errors
 
 @bot.command(
     name="seasonal",
-    description="",
+    description="Shows seasonal anime.",
     help=prefix + "seasonal [season] [year]",
     aliases=["season"]
 )
@@ -1413,22 +1413,71 @@ async def seasonal(ctx, season=None, year=None):
     if season.upper() not in ("FALL", "WINTER", "SPRING", "SUMMER"):
         embed = discord.Embed(
             title="Invalid season",
-            description="Valid seasons are: `FALL|WINTER|SPRING|SUMMER`",
+            description="Valid seasons are: `WINTER|SPRING|SUMMER|FALL`",
             color=COLOR_ERROR,
         )
         await ctx.send(embed=embed)
         return
 
-    medias = get_seasonal(season.upper(), year)
+    medias = get_seasonal(season.upper(), year, 1, 25)
 
-    result = "```"
+    result = "```Page 1\nID     - Name\n"
     for media in medias["media"]:
         if media["title"]["english"] is None:
             media["title"]["english"] = media["title"]["romaji"]
         result += f'{media["id"]} - {media["title"]["english"]}\n'
     result += "```"
+    message = await ctx.send(result)
 
-    await ctx.send(result)
+    cur_page = 1
+
+    await message.add_reaction("◀️")
+    await message.add_reaction("▶️")
+
+    def check(reaction, user):
+        # This makes sure nobody except the command sender can interact with the "menu"
+        return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
+
+    while True:
+        try:
+            reaction, user = await bot.wait_for("reaction_add", timeout=60, check=check)
+            # waiting for a reaction to be added - times out after 60 seconds
+
+            if str(reaction.emoji) == "▶️":  # and cur_page != pages:
+                # Go to next page
+                cur_page += 1
+                medias = get_seasonal(season.upper(), year, cur_page, 25)
+                if not medias["media"]:
+                    cur_page -= 1
+                    await message.remove_reaction(reaction, user)
+                    continue
+                result = f"```Page {cur_page}\nID     - Name\n"
+                for media in medias["media"]:
+                    if media["title"]["english"] is None:
+                        media["title"]["english"] = media["title"]["romaji"]
+                    result += f'{media["id"]} - {media["title"]["english"]}\n'
+                result += "```"
+                await message.edit(content=result)
+                await message.remove_reaction(reaction, user)
+            elif str(reaction.emoji) == "◀️" and cur_page > 1:
+                # Go to previous page
+                cur_page -= 1
+                medias = get_seasonal(season.upper(), year, cur_page, 25)
+                result = f"```Page {cur_page}\nID     - Name\n"
+                for media in medias["media"]:
+                    if media["title"]["english"] is None:
+                        media["title"]["english"] = media["title"]["romaji"]
+                    result += f'{media["id"]} - {media["title"]["english"]}\n'
+                result += "```"
+                await message.edit(content=result)
+                await message.remove_reaction(reaction, user)
+            else:
+                # removes reactions if the user tries to go forward on the last page or
+                # backwards on the first page
+                await message.remove_reaction(reaction, user)
+        except asyncio.TimeoutError:
+            # ending the loop if user doesn't react after x seconds
+            break
 
 
 @bot.event
