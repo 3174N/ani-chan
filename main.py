@@ -952,7 +952,7 @@ async def show_users(ctx):
 
 @bot.command(
     name="top",
-    description="Shows the top 10 of another user.",
+    description="Shows the top medias of a user.",
     help=prefix + "top [top_count] <name|mention>",
 )
 async def top(ctx, top_count=10, name=None):
@@ -1036,12 +1036,16 @@ async def search(ctx, search_type=None, *search_string):
             result += f'{media["type"].capitalize()} {media["id"]} - '
 
             if media["title"]["english"] is not None:
-                result += media["title"]["english"]
+                title = media["title"]["english"]
             elif media["title"]["romaji"] is not None:
-                result += media["title"]["romaji"]
+                title = media["title"]["romaji"]
             else:
-                result += media["title"]["native"]
+                title = media["title"]["native"]
 
+            if len(title) > 70:
+                title = title[:67] + "..."
+
+            result += title
             result += "\n"
     elif search_type.lower() == "character":
         characters = search_character(search_string)
