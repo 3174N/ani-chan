@@ -17,7 +17,7 @@ To use the bot, you can:
 
 ## Running the bot
 
-See INSTALLATION.md<sup>WIP</sup>
+See [INSTALLATION.md](INSTALLATION.md)
 
 ## License
 
