@@ -477,9 +477,11 @@ settings = load_settings()
 prefix = settings['prefix']
 print(settings)
 
+intents = discord.Intents.all()
 
 bot = commands.Bot(command_prefix=prefix,
-                   help_command=None, case_insensitive=True)
+                   help_command=None, case_insensitive=True,
+                   intents=intents)
 
 
 @bot.event
@@ -1432,6 +1434,17 @@ async def seasonal(ctx, season=None, year=None):
         except asyncio.TimeoutError:
             # ending the loop if user doesn't react after x seconds
             break
+
+
+@bot.event
+async def on_member_remove(member):
+    # Update users
+    global users_glob
+    del users[str(member.id)]
+    users_glob[(member.guild.id)] = users
+
+    update_users(users_glob)
+    load_users()
 
 
 @bot.event
