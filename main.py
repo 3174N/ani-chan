@@ -25,7 +25,7 @@ from queries import *
 COLOR_DEFAULT = discord.Color.teal()
 COLOR_ERROR = discord.Color.red()
 
-BOT_VERSION = "1.4.0"
+BOT_VERSION = "1.4.2"
 
 
 users_glob = {}
@@ -1139,7 +1139,10 @@ async def scores(ctx, media_type=None, *name):
                 embed.add_field(
                     name="SERVER SCORE",
                     value=str(int(user_scores[status])),
-                    inline=False,
+                )
+                embed.add_field(
+                    name="ANILIST SCORE",
+                    value=media["meanScore"],
                 )
             else:
                 embed.add_field(
