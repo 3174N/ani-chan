@@ -6,8 +6,12 @@ Ani-chan - A Discord bot for browsing AniList.
 
 ## Overview
 
+<img src="docs/AC_TP.png" align="right" height=30% width=30%>
+
 AnilistBot is a bot for browsing AniList from within Discord.
 You can search for anime and manga, compare server scores, and more.
+
+### Using the bot
 
 To use the bot, you can:
 
@@ -15,9 +19,21 @@ To use the bot, you can:
 - [Run it yourself](#running-the-bot)
 - [Join the Dev Server](https://discord.gg/5s69DV7gwP) and use it there
 
-## Running the bot
+### Features 
 
-See [INSTALLATION.md](INSTALLATION.md)
+ - Searching for and displaying info about anime, mangas, and characters from AniList
+ - Link an AniList user and show their scores and statuses
+ - Compare scores of all the users in the server
+ - And [more in the future...](https://github.com/3174N/ani-chan/projects/1)
+
+## Running the bot on your own
+
+1. Create a `.token` file and put your bot token in it (see [.token.ex](.token.ex)).
+2. Create a `config.json` file (see [config.json.ex](config.json.ex)).
+3. Install dependencies by executing `pip install -r requirements.txt`
+4. Run the bot by executing `python main.py`
+
+_**NOTE:** If you plan to host the bot using a hosting service make sure it enables file saving. If it doesn't, use another service or change [files.py](files.py) however you see fit._
 
 ## License
 
