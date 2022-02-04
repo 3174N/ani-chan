@@ -225,6 +225,7 @@ query ($search: String) {
         coverImage {
             extraLarge,
         },
+        bannerImage,
         siteUrl,
         genres,
         type,
@@ -255,6 +256,7 @@ query ($id: Int) {
         coverImage {
             extraLarge,
         },
+        bannerImage,
         siteUrl,
         genres,
         type,

@@ -431,6 +431,7 @@ def bot_get_media(media_type, name):
             color=COLOR_DEFAULT,
         )
         embed.set_thumbnail(url=media["coverImage"]["extraLarge"])
+        embed.set_image(url=media["bannerImage"])
         embed.add_field(name="Mean Score", value=media["meanScore"])
         embed.add_field(name="Type", value=media["type"].capitalize())
         embed.add_field(
