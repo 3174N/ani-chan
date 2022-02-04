@@ -1,5 +1,5 @@
 """
-Anilist discord bot.
+AniList discord bot.
 """
 
 ###########
@@ -144,8 +144,7 @@ def get_media(name, type):
 
     # Find media by name.
     response = requests.post(
-        URL, json={"query": QUERY_MEDIA %
-                   type.upper(), "variables": {"search": name}}
+        URL, json={"query": QUERY_MEDIA % type.upper(), "variables": {"search": name}}
     )
 
     if response.json()["data"]["Media"] is not None:
@@ -163,8 +162,7 @@ def get_character(name):
     try:
         # Find character by ID.
         response = requests.post(
-            URL, json={"query": QUERY_CHARACTER_ID,
-                       "variables": {"id": int(name)}}
+            URL, json={"query": QUERY_CHARACTER_ID, "variables": {"id": int(name)}}
         )
 
         if response.json()["data"]["Character"] is not None:
@@ -269,20 +267,17 @@ def get_user_score(userId, mediaId, repeat=0):
         if repeat <= 5:
             time.sleep(1)
             # TODO: better solution
-            return get_user_score(userId, mediaId, repeat+1)
+            return get_user_score(userId, mediaId, repeat + 1)
         else:
             return None
 
 
 def get_seasonal(season, year, page, perPage):
-    variables = {
-        "year": year,
-        "page": page,
-        "perPage": perPage
-    }
+    variables = {"year": year, "page": page, "perPage": perPage}
 
     response = requests.post(
-        URL, json={"query": QUERY_SEASONAL % season, "variables": variables})
+        URL, json={"query": QUERY_SEASONAL % season, "variables": variables}
+    )
 
     return response.json()["data"]["Page"]
 
@@ -310,18 +305,16 @@ query ($mediaId: Int) {
 
     for user in users:
         value = users[user]
-        media_query_combined += media_query % ("_" +
-                                               value["name"], str(value["id"]))
+        media_query_combined += media_query % ("_" + value["name"], str(value["id"]))
 
     query = query % media_query_combined
     # print(query)
 
     variables = {"mediaId": mediaId}
-    response = requests.post(
-        URL, json={"query": query, "variables": variables})
+    response = requests.post(URL, json={"query": query, "variables": variables})
     # print(response.text)
 
-    avarege_score = 0
+    average_score = 0
     scores = 0
     for user in users:
         value = users[user]
@@ -334,28 +327,30 @@ query ($mediaId: Int) {
             if score["status"] == "COMPLETED":
                 status = f'{value["displayName"]} **({score["score"]})**'
                 if score["score"] != "?":
-                    avarege_score += score["score"]
+                    average_score += score["score"]
                     scores += 1
             elif score["status"] == "CURRENT":
                 status = f'{value["displayName"]} [{score["progress"]}] **({score["score"]})**'
                 if score["score"] != "?":
-                    avarege_score += score["score"]
+                    average_score += score["score"]
                     scores += 1
             elif score["status"] == "REPEATING":
                 status = f'{value["displayName"]} [{score["progress"]}/__R__] **({score["score"]})**'
                 if score["score"] != "?":
-                    avarege_score += score["score"]
+                    average_score += score["score"]
                     scores += 1
             elif score["status"] == "PAUSED":
                 status = f'{value["displayName"]} [{score["progress"]}/__P__] **({score["score"]})**'
                 if score["score"] != "?":
-                    avarege_score += score["score"]
+                    average_score += score["score"]
                     scores += 1
             elif score["status"] == "DROPPED":
                 status = f'{value["displayName"]} [{score["progress"]}] **({score["score"]})**'
-                if (media_type == "ANIME" and score["progress"] >= MIN_DROP_ANIME) or (media_type == "MANGA" and score["progress"] >= MIN_DROP_MANGA):
+                if (media_type == "ANIME" and score["progress"] >= MIN_DROP_ANIME) or (
+                    media_type == "MANGA" and score["progress"] >= MIN_DROP_MANGA
+                ):
                     if score["score"] != "?":
-                        avarege_score += score["score"]
+                        average_score += score["score"]
                         scores += 1
             else:
                 status = value["displayName"]
@@ -377,9 +372,9 @@ query ($mediaId: Int) {
 
     result_sort = {}
 
-    if avarege_score != 0:
-        avarege_score /= scores
-        result_sort["AVERAGE"] = avarege_score
+    if average_score != 0:
+        average_score /= scores
+        result_sort["AVERAGE"] = average_score
 
     if "COMPLETED" in result:
         result_sort["COMPLETED"] = result["COMPLETED"]
@@ -395,7 +390,7 @@ query ($mediaId: Int) {
 
 
 def bot_get_media(media_type, name):
-    """Gets a media from AniList and generates an embeded message.
+    """Gets a media from AniList and generates an embedded message.
 
     Keyword arguments:
       media_type -- Media type.
@@ -403,8 +398,7 @@ def bot_get_media(media_type, name):
     """
     media = get_media(name, media_type)
     if media is None:
-        embed = discord.Embed(
-            title="Not Found", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(title="Not Found", description="):", color=COLOR_DEFAULT)
     else:
         # user_scores = get_users_statuses(media["id"], media["type"])
 
@@ -427,7 +421,7 @@ def bot_get_media(media_type, name):
             media["description"] = media["description"][:1020] + "..."
         media["description"] = markdownify.markdownify(media["description"])
         media["description"] = media["description"].split(" ", 65)[0:65]
-        desciption = " ".join(media["description"]) + "..."
+        description = " ".join(media["description"]) + "..."
 
         embed = discord.Embed(
             title=media["title"]["english"],
@@ -444,8 +438,7 @@ def bot_get_media(media_type, name):
         )
         embed.add_field(name="Season", value=media["season"])
         embed.add_field(name="Popularity", value=media["popularity"])
-        embed.add_field(name="Favourited",
-                        value=f'{media["favourites"]} times')
+        embed.add_field(name="Favourited", value=f'{media["favourites"]} times')
         if media_type.lower() == "anime":
             embed.add_field(name="Episodes", value=media["episodes"])
             embed.add_field(
@@ -455,9 +448,8 @@ def bot_get_media(media_type, name):
             embed.add_field(name="Chapters", value=media["chapters"])
             embed.add_field(name="Volumes", value=media["volumes"])
         embed.add_field(name="Format", value=media["format"])
-        embed.add_field(
-            name="Genres", value=" - ".join(media["genres"]), inline=False)
-        embed.add_field(name="Description", value=desciption, inline=False)
+        embed.add_field(name="Genres", value=" - ".join(media["genres"]), inline=False)
+        embed.add_field(name="Description", value=description, inline=False)
 
         # # embed.add_field(name="User Scores", value=" ")
         # for status in user_scores:
@@ -474,14 +466,14 @@ def bot_get_media(media_type, name):
 
 # Settings
 settings = load_settings()
-prefix = settings['prefix']
+prefix = settings["prefix"]
 print(settings)
 
 intents = discord.Intents.all()
 
-bot = commands.Bot(command_prefix=prefix,
-                   help_command=None, case_insensitive=True,
-                   intents=intents)
+bot = commands.Bot(
+    command_prefix=prefix, help_command=None, case_insensitive=True, intents=intents
+)
 
 
 @bot.event
@@ -489,7 +481,7 @@ async def on_ready():
     """Gets called when the bot goes online."""
     print("We have logged in as {0.user}".format(bot))
     for guild in bot.guilds:
-        print(guild.id, '-', guild.name)
+        print(guild.id, "-", guild.name)
 
     global users_glob
     users_glob = load_users()
@@ -504,15 +496,15 @@ async def on_message(message):
     if str(message.channel.guild.id) not in users_glob:
         users_glob[str(message.channel.guild.id)] = {}
         update_users(users_glob)
-    if str(message.channel.guild.id) not in settings['servers']:
-        if settings['servers']:
-            settings['servers'][str(message.guild.id)] = {'channels': None}
+    if str(message.channel.guild.id) not in settings["servers"]:
+        if settings["servers"]:
+            settings["servers"][str(message.guild.id)] = {"channels": None}
         else:
-            settings['servers'] = {str(message.guild.id): {'channels': None}}
+            settings["servers"] = {str(message.guild.id): {"channels": None}}
         update_settings(settings)
 
     users = users_glob[str(message.channel.guild.id)]
-    channels = settings['servers'][str(message.guild.id)]['channels']
+    channels = settings["servers"][str(message.guild.id)]["channels"]
 
     if channels is None or str(message.channel.id) in channels:
         await bot.process_commands(message)
@@ -550,8 +542,7 @@ async def help(ctx, help_command=""):
                     name="Commands", value=help_text[category], inline=False
                 )
             else:
-                embed.add_field(
-                    name=category, value=help_text[category], inline=False)
+                embed.add_field(name=category, value=help_text[category], inline=False)
 
         help_text = f"\n**Prefix:** `{prefix}`"
         help_text += f"\nUse `{prefix}help [command]` to get more info on the command."
@@ -599,7 +590,11 @@ async def ping(ctx):
     await ctx.send("Pong!\n{:d} ms".format(int(round(bot.latency, 3) * 1000)))
 
 
-@bot.command(name="set-channels", description='_[ADMIN]_ Sets bot\'s command channels', help=prefix+'set-channels [channels]')
+@bot.command(
+    name="set-channels",
+    description="_[ADMIN]_ Sets bot's command channels",
+    help=prefix + "set-channels [channels]",
+)
 async def set_channels(ctx, *channels):
     if not ctx.message.author.guild_permissions.administrator:
         return
@@ -607,13 +602,13 @@ async def set_channels(ctx, *channels):
     channels_id = []
 
     for channel in channels:
-        channel = channel.strip('<#>')
+        channel = channel.strip("<#>")
         channels_id.append(channel)
 
-    settings['servers'][str(ctx.guild.id)]['channels'] = channels_id
+    settings["servers"][str(ctx.guild.id)]["channels"] = channels_id
     update_settings(settings)
 
-    await ctx.send('Channels set successfuly!')
+    await ctx.send("Channels set successfully!")
 
 
 @bot.command(
@@ -690,7 +685,7 @@ async def user(ctx, name=None):
     if user_data is not None:
 
         embed = discord.Embed(
-            title=user_data["name"] + " - Anilist Statistics",
+            title=user_data["name"] + " - AniList Statistics",
             url=user_data["siteUrl"],
             color=string_to_hex(user_data["options"]["profileColor"]),
         )
@@ -750,20 +745,17 @@ async def user(ctx, name=None):
             + f'- Favorite Genres: **{stats_manga["genres"]}**\n'
         )
 
-        embed.add_field(name="Anime Statistics",
-                        value=anime_stats_str, inline=False)
-        embed.add_field(name="Manga Statistics",
-                        value=manga_stats_str, inline=False)
+        embed.add_field(name="Anime Statistics", value=anime_stats_str, inline=False)
+        embed.add_field(name="Manga Statistics", value=manga_stats_str, inline=False)
     else:
-        embed = discord.Embed(
-            title="Not Found", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
 
 
 @bot.command(
     name="link",
-    description="Links your discord account to an anilist user.",
+    description="Links your discord account to an AniList user.",
     help=prefix + "link [name]",
 )
 async def link(ctx, name=None):
@@ -789,7 +781,9 @@ async def link(ctx, name=None):
             await ctx.send("User taken.")
             return
 
-    if add_user(ctx.message.guild.id, ctx.message.author.id, name, ctx.message.author.name):
+    if add_user(
+        ctx.message.guild.id, ctx.message.author.id, name, ctx.message.author.name
+    ):
         await user(ctx, name)
         await ctx.send("Linked successfully")
     else:
@@ -798,11 +792,11 @@ async def link(ctx, name=None):
 
 @bot.command(
     name="unlink",
-    description="Removes the link between your discord account and an anilist user.",
+    description="Removes the link between your discord account and an AniList user.",
     help=prefix + "unlink",
 )
 async def unlink(ctx):
-    """Unlikes a user from linked AniList account.
+    """Unlinks a user from linked AniList account.
 
     Keyword arguments:
       ctx -- Context.
@@ -817,7 +811,7 @@ async def unlink(ctx):
     load_users()
 
     embed = discord.Embed(
-        title="User unlinked successfuly", description="Hurrah!", color=COLOR_DEFAULT
+        title="User unlinked successfully", description="Hurrah!", color=COLOR_DEFAULT
     )
     await ctx.send(embed=embed)
 
@@ -835,13 +829,13 @@ async def show_users(ctx):
     result = []
     for i in users:
         result.append(
-            f'**Discord:** {users[i]["displayName"]} - **Anilist:** [{users[i]["name"]}](https://anilist.co/user/{users[i]["id"]})'
+            f'**Discord:** {users[i]["displayName"]} - **AniList:** [{users[i]["name"]}](https://AniList.co/user/{users[i]["id"]})'
         )
 
     # Split users
     s = []
     for i in range(0, int(len(result)) + 1, 20):
-        c = result[i: i + 20]
+        c = result[i : i + 20]
         if c != []:
             s.append(c)
     result = []
@@ -928,8 +922,7 @@ async def top(ctx, top_count=10, name=None):
 
     user_data = get_user(name)
     if user_data is not None:
-        variables = {"userId": user_data["id"],
-                     "page": 1, "perPage": top_count}
+        variables = {"userId": user_data["id"], "page": 1, "perPage": top_count}
 
         response = requests.post(
             URL, json={"query": QUERY_TOP_MEDIA, "variables": variables}
@@ -952,8 +945,7 @@ async def top(ctx, top_count=10, name=None):
         )
         embed.set_thumbnail(url=user_data["avatar"]["large"])
     else:
-        embed = discord.Embed(
-            title="Not Found", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
 
@@ -1019,8 +1011,8 @@ async def search(ctx, search_type=None, *search_string):
     else:
         result = "Usage: 'search [anime|manga|character|media|user] [name]'"
 
-    if result == '':
-        result = 'No results ):'
+    if result == "":
+        result = "No results ):"
 
     await ctx.send(f"```{result}```")
 
@@ -1073,8 +1065,7 @@ async def score(ctx, name, *media_name):
                     score["status"] = (
                         "Watching" if media["type"] == "ANIME" else "Reading"
                     )
-                embed.add_field(
-                    name="Status", value=score["status"].capitalize())
+                embed.add_field(name="Status", value=score["status"].capitalize())
                 embed.add_field(name="Progress", value=score["progress"])
             embed.set_thumbnail(url=user_data["avatar"]["large"])
         else:
@@ -1082,8 +1073,7 @@ async def score(ctx, name, *media_name):
                 title="Not found.", description="):", color=COLOR_DEFAULT
             )
     else:
-        embed = discord.Embed(title="Not found.",
-                              description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(title="Not found.", description="):", color=COLOR_DEFAULT)
     await ctx.send(embed=embed)
 
 
@@ -1141,7 +1131,7 @@ async def scores(ctx, media_type=None, *name):
                     value=str(int(user_scores[status])),
                 )
                 embed.add_field(
-                    name="ANILIST SCORE",
+                    name="AniList SCORE",
                     value=media["meanScore"],
                 )
             else:
@@ -1150,10 +1140,10 @@ async def scores(ctx, media_type=None, *name):
                 )
         embed.set_thumbnail(url=media["coverImage"]["extraLarge"])
         embed.set_footer(
-            text=f'Dropped scores affect server score only if progress is {MIN_DROP_ANIME if media["type"] == "ANIME" else MIN_DROP_MANGA} or more.')
+            text=f'Dropped scores affect server score only if progress is {MIN_DROP_ANIME if media["type"] == "ANIME" else MIN_DROP_MANGA} or more.'
+        )
     else:
-        embed = discord.Embed(title="Not found.",
-                              description="):", color=COLOR_ERROR)
+        embed = discord.Embed(title="Not found.", description="):", color=COLOR_ERROR)
 
     await ctx.send(embed=embed)
 
@@ -1205,7 +1195,7 @@ async def show_character(ctx, *name):
             value=" - ".join(character["name"]["alternative"]),
             inline=False,
         )
-        embed.add_field(name="Anilist ID", value=character["id"])
+        embed.add_field(name="AniList ID", value=character["id"])
         embed.add_field(name="Favourites", value=character["favourites"])
     else:
         embed = discord.Embed(
@@ -1335,7 +1325,7 @@ async def favorites(ctx, name=None):  # TODO: errors
 
             studios += f'• [{media["name"]}]({media["siteUrl"]}) *({media["id"]})*\n'
 
-        # Add feilds if strings are not empty
+        # Add fields if strings are not empty
         if anime != "":
             embed.add_field(name="Anime", value=anime, inline=False)
         if manga != "":
@@ -1347,8 +1337,7 @@ async def favorites(ctx, name=None):  # TODO: errors
         if studios != "":
             embed.add_field(name="Studios", value=studios, inline=False)
     else:
-        embed = discord.Embed(
-            title="Not Found", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
 
@@ -1357,7 +1346,7 @@ async def favorites(ctx, name=None):  # TODO: errors
     name="seasonal",
     description="Shows seasonal anime.",
     help=prefix + "seasonal [season] [year]",
-    aliases=["season"]
+    aliases=["season"],
 )
 async def seasonal(ctx, season=None, year=None):
     if season is None or year is None:
@@ -1453,11 +1442,11 @@ async def on_member_remove(member):
 @bot.event
 async def on_command_error(ctx, error):
     await ctx.message.add_reaction("❓")
-    traceback.print_exception(
-        type(error), error, error.__traceback__, file=sys.stderr)
+    traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+
 
 # Run bot
-with open('./.token') as file:
+with open("./.token") as file:
     token = file.read()
 
 bot.run(token)
