@@ -144,7 +144,8 @@ def get_media(name, type):
 
     # Find media by name.
     response = requests.post(
-        URL, json={"query": QUERY_MEDIA % type.upper(), "variables": {"search": name}}
+        URL, json={"query": QUERY_MEDIA %
+                   type.upper(), "variables": {"search": name}}
     )
 
     if response.json()["data"]["Media"] is not None:
@@ -162,7 +163,8 @@ def get_character(name):
     try:
         # Find character by ID.
         response = requests.post(
-            URL, json={"query": QUERY_CHARACTER_ID, "variables": {"id": int(name)}}
+            URL, json={"query": QUERY_CHARACTER_ID,
+                       "variables": {"id": int(name)}}
         )
 
         if response.json()["data"]["Character"] is not None:
@@ -305,13 +307,15 @@ query ($mediaId: Int) {
 
     for user in users:
         value = users[user]
-        media_query_combined += media_query % ("_" + value["name"], str(value["id"]))
+        media_query_combined += media_query % ("_" +
+                                               value["name"], str(value["id"]))
 
     query = query % media_query_combined
     # print(query)
 
     variables = {"mediaId": mediaId}
-    response = requests.post(URL, json={"query": query, "variables": variables})
+    response = requests.post(
+        URL, json={"query": query, "variables": variables})
     # print(response.text)
 
     average_score = 0
@@ -398,7 +402,8 @@ def bot_get_media(media_type, name):
     """
     media = get_media(name, media_type)
     if media is None:
-        embed = discord.Embed(title="Not Found", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(
+            title="Not Found", description="):", color=COLOR_DEFAULT)
     else:
         # user_scores = get_users_statuses(media["id"], media["type"])
 
@@ -439,7 +444,8 @@ def bot_get_media(media_type, name):
         )
         embed.add_field(name="Season", value=media["season"])
         embed.add_field(name="Popularity", value=media["popularity"])
-        embed.add_field(name="Favourited", value=f'{media["favourites"]} times')
+        embed.add_field(name="Favourited",
+                        value=f'{media["favourites"]} times')
         if media_type.lower() == "anime":
             embed.add_field(name="Episodes", value=media["episodes"])
             embed.add_field(
@@ -449,7 +455,8 @@ def bot_get_media(media_type, name):
             embed.add_field(name="Chapters", value=media["chapters"])
             embed.add_field(name="Volumes", value=media["volumes"])
         embed.add_field(name="Format", value=media["format"])
-        embed.add_field(name="Genres", value=" - ".join(media["genres"]), inline=False)
+        embed.add_field(
+            name="Genres", value=" - ".join(media["genres"]), inline=False)
         embed.add_field(name="Description", value=description, inline=False)
 
         # # embed.add_field(name="User Scores", value=" ")
@@ -488,12 +495,15 @@ async def on_ready():
     users_glob = load_users()
     print(users_glob)
 
-    await bot.change_presence(activity=discord.Game(name="with Annie May's wheelchair"))
-
 
 @bot.event
 async def on_message(message):
-    global users
+    global users, users_glob
+
+    if not validate_users(users_glob):
+        print("sadasd")
+        users_glob = load_users()  # Hope this works. TODO: Something better
+
     if str(message.channel.guild.id) not in users_glob:
         users_glob[str(message.channel.guild.id)] = {}
         update_users(users_glob)
@@ -507,7 +517,7 @@ async def on_message(message):
     users = users_glob[str(message.channel.guild.id)]
     channels = settings["servers"][str(message.guild.id)]["channels"]
 
-    if channels is None or str(message.channel.id) in channels:
+    if channels is None or channels == [] or str(message.channel.id) in channels:
         await bot.process_commands(message)
 
 
@@ -543,7 +553,8 @@ async def help(ctx, help_command=""):
                     name="Commands", value=help_text[category], inline=False
                 )
             else:
-                embed.add_field(name=category, value=help_text[category], inline=False)
+                embed.add_field(
+                    name=category, value=help_text[category], inline=False)
 
         help_text = f"\n**Prefix:** `{prefix}`"
         help_text += f"\nUse `{prefix}help [command]` to get more info on the command."
@@ -604,6 +615,16 @@ async def set_channels(ctx, *channels):
 
     for channel in channels:
         channel = channel.strip("<#>")
+        exists = False
+        for g_channel in ctx.guild.channels:  # TODO: better method
+            try:
+                if g_channel.id == int(channel):
+                    exists = True
+            except:
+                pass
+        if not exists:
+            await ctx.send(f"Channel {channel} does not exist, skipping.")
+            continue
         channels_id.append(channel)
 
     settings["servers"][str(ctx.guild.id)]["channels"] = channels_id
@@ -746,10 +767,13 @@ async def user(ctx, name=None):
             + f'- Favorite Genres: **{stats_manga["genres"]}**\n'
         )
 
-        embed.add_field(name="Anime Statistics", value=anime_stats_str, inline=False)
-        embed.add_field(name="Manga Statistics", value=manga_stats_str, inline=False)
+        embed.add_field(name="Anime Statistics",
+                        value=anime_stats_str, inline=False)
+        embed.add_field(name="Manga Statistics",
+                        value=manga_stats_str, inline=False)
     else:
-        embed = discord.Embed(title="Not Found", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(
+            title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
 
@@ -836,7 +860,7 @@ async def show_users(ctx):
     # Split users
     s = []
     for i in range(0, int(len(result)) + 1, 20):
-        c = result[i : i + 20]
+        c = result[i: i + 20]
         if c != []:
             s.append(c)
     result = []
@@ -923,7 +947,8 @@ async def top(ctx, top_count=10, name=None):
 
     user_data = get_user(name)
     if user_data is not None:
-        variables = {"userId": user_data["id"], "page": 1, "perPage": top_count}
+        variables = {"userId": user_data["id"],
+                     "page": 1, "perPage": top_count}
 
         response = requests.post(
             URL, json={"query": QUERY_TOP_MEDIA, "variables": variables}
@@ -946,7 +971,8 @@ async def top(ctx, top_count=10, name=None):
         )
         embed.set_thumbnail(url=user_data["avatar"]["large"])
     else:
-        embed = discord.Embed(title="Not Found", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(
+            title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
 
@@ -1066,7 +1092,8 @@ async def score(ctx, name, *media_name):
                     score["status"] = (
                         "Watching" if media["type"] == "ANIME" else "Reading"
                     )
-                embed.add_field(name="Status", value=score["status"].capitalize())
+                embed.add_field(
+                    name="Status", value=score["status"].capitalize())
                 embed.add_field(name="Progress", value=score["progress"])
             embed.set_thumbnail(url=user_data["avatar"]["large"])
         else:
@@ -1074,7 +1101,8 @@ async def score(ctx, name, *media_name):
                 title="Not found.", description="):", color=COLOR_DEFAULT
             )
     else:
-        embed = discord.Embed(title="Not found.", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(title="Not found.",
+                              description="):", color=COLOR_DEFAULT)
     await ctx.send(embed=embed)
 
 
@@ -1144,7 +1172,8 @@ async def scores(ctx, media_type=None, *name):
             text=f'Dropped scores affect server score only if progress is {MIN_DROP_ANIME if media["type"] == "ANIME" else MIN_DROP_MANGA} or more.'
         )
     else:
-        embed = discord.Embed(title="Not found.", description="):", color=COLOR_ERROR)
+        embed = discord.Embed(title="Not found.",
+                              description="):", color=COLOR_ERROR)
 
     await ctx.send(embed=embed)
 
@@ -1338,7 +1367,8 @@ async def favorites(ctx, name=None):  # TODO: errors
         if studios != "":
             embed.add_field(name="Studios", value=studios, inline=False)
     else:
-        embed = discord.Embed(title="Not Found", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(
+            title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
 
@@ -1443,7 +1473,8 @@ async def on_member_remove(member):
 @bot.event
 async def on_command_error(ctx, error):
     await ctx.message.add_reaction("❓")
-    traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+    traceback.print_exception(
+        type(error), error, error.__traceback__, file=sys.stderr)
 
 
 # Run bot

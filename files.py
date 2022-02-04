@@ -25,8 +25,9 @@ def update_users(users_dict):
     Keyword arguments:
       users_dict -- Users dictionary.
     """
-    with open(USERS_FILE, "w") as users_file:
-        users_file.write(json.dumps(users_dict))
+    if users_dict:  # Check if dictionary is not empty
+        with open(USERS_FILE, "w") as users_file:
+            users_file.write(json.dumps(users_dict))
 
 
 def load_settings():
@@ -44,5 +45,22 @@ def update_settings(settings_dict):
     Keyword arguments:
       settings_dict -- Settings dictionary.
     """
-    with open(SETTINGS_FILE, "w") as settings_file:
-        settings_file.write(json.dumps(settings_dict))
+    if settings_dict:  # Check if dictionary is not empty
+        with open(SETTINGS_FILE, "w") as settings_file:
+            settings_file.write(json.dumps(settings_dict))
+
+
+def validate_users(users_dict):
+    """Validates the users dictionary.
+
+    Keyword arguments:
+      users_dict -- Users dictionary.
+    """
+    if not users_dict:
+        return False
+
+    for server in users_dict.values():
+        if server:  # if not not server
+            return True
+
+    return False
