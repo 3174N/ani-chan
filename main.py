@@ -25,7 +25,7 @@ from queries import *
 COLOR_DEFAULT = discord.Color.teal()
 COLOR_ERROR = discord.Color.red()
 
-BOT_VERSION = "1.4.2"
+BOT_VERSION = "1.4.4"
 
 
 users_glob = {}
@@ -436,7 +436,8 @@ def bot_get_media(media_type, name):
             color=COLOR_DEFAULT,
         )
         embed.set_thumbnail(url=media["coverImage"]["extraLarge"])
-        embed.set_image(url=media["bannerImage"])
+        if media["bannerImage"] != "?":
+            embed.set_image(url=media["bannerImage"])
         embed.add_field(name="Mean Score", value=media["meanScore"])
         embed.add_field(name="Type", value=media["type"].capitalize())
         embed.add_field(
