@@ -8,7 +8,7 @@ Ani-chan - A Discord bot for browsing AniList.
 
 <img src="docs/AC_TP.png" align="right" height=30% width=30%>
 
-AnilistBot is a bot for browsing AniList from within Discord.
+Ani-chan is a bot for browsing AniList from within Discord.
 You can search for anime and manga, compare server scores, and more.
 
 ### Using the bot
@@ -44,5 +44,6 @@ Feel free to clone, fork, make changes to the code, etc'. PRs are welcome!
 
 ## Credits
 
+- Hosted on [cronut.cafe](https://cronut.cafe/)
 - [Annie May](https://github.com/AlexanderColen/Annie-May-Discord-Bot) for the idea
 - [rerekinn](https://instagram.com/rerekinn?utm_medium=copy_link) for illustrating Ani-chan
