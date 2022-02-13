@@ -163,8 +163,7 @@ def get_character(name):
     try:
         # Find character by ID.
         response = requests.post(
-            URL, json={"query": QUERY_CHARACTER_ID,
-                       "variables": {"id": int(name)}}
+            URL, json={"query": QUERY_CHARACTER_ID, "variables": {"id": int(name)}}
         )
 
         if response.json()["data"]["Character"] is not None:
@@ -284,7 +283,7 @@ def get_seasonal(season, year, page, perPage):
     return response.json()["data"]["Page"]
 
 
-def get_users_statuses(mediaId, media_type):
+def get_users_statuses(loc_users, mediaId, media_type):
     """Gets the statuses / scores of all the connected users on a specific media.
 
     Keyword arguments:
@@ -305,23 +304,21 @@ query ($mediaId: Int) {
     },"""
     media_query_combined = ""
 
-    for user in users:
-        value = users[user]
-        media_query_combined += media_query % ("_" +
-                                               value["name"], str(value["id"]))
+    for user in loc_users:
+        value = loc_users[user]
+        media_query_combined += media_query % ("_" + value["name"], str(value["id"]))
 
     query = query % media_query_combined
     # print(query)
 
     variables = {"mediaId": mediaId}
-    response = requests.post(
-        URL, json={"query": query, "variables": variables})
+    response = requests.post(URL, json={"query": query, "variables": variables})
     # print(response.text)
 
     average_score = 0
     scores = 0
-    for user in users:
-        value = users[user]
+    for user in loc_users:
+        value = loc_users[user]
         score = get_user_score(value["id"], mediaId)
         # time.sleep(0.001)
         if score is not None:
@@ -402,8 +399,7 @@ def bot_get_media(media_type, name):
     """
     media = get_media(name, media_type)
     if media is None:
-        embed = discord.Embed(
-            title="Not Found", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(title="Not Found", description="):", color=COLOR_DEFAULT)
     else:
         # user_scores = get_users_statuses(media["id"], media["type"])
 
@@ -445,8 +441,7 @@ def bot_get_media(media_type, name):
         )
         embed.add_field(name="Season", value=media["season"])
         embed.add_field(name="Popularity", value=media["popularity"])
-        embed.add_field(name="Favourited",
-                        value=f'{media["favourites"]} times')
+        embed.add_field(name="Favourited", value=f'{media["favourites"]} times')
         if media_type.lower() == "anime":
             embed.add_field(name="Episodes", value=media["episodes"])
             embed.add_field(
@@ -456,8 +451,7 @@ def bot_get_media(media_type, name):
             embed.add_field(name="Chapters", value=media["chapters"])
             embed.add_field(name="Volumes", value=media["volumes"])
         embed.add_field(name="Format", value=media["format"])
-        embed.add_field(
-            name="Genres", value=" - ".join(media["genres"]), inline=False)
+        embed.add_field(name="Genres", value=" - ".join(media["genres"]), inline=False)
         embed.add_field(name="Description", value=description, inline=False)
 
         # # embed.add_field(name="User Scores", value=" ")
@@ -554,8 +548,7 @@ async def help(ctx, help_command=""):
                     name="Commands", value=help_text[category], inline=False
                 )
             else:
-                embed.add_field(
-                    name=category, value=help_text[category], inline=False)
+                embed.add_field(name=category, value=help_text[category], inline=False)
 
         help_text = f"\n**Prefix:** `{prefix}`"
         help_text += f"\nUse `{prefix}help [command]` to get more info on the command."
@@ -768,13 +761,10 @@ async def user(ctx, name=None):
             + f'- Favorite Genres: **{stats_manga["genres"]}**\n'
         )
 
-        embed.add_field(name="Anime Statistics",
-                        value=anime_stats_str, inline=False)
-        embed.add_field(name="Manga Statistics",
-                        value=manga_stats_str, inline=False)
+        embed.add_field(name="Anime Statistics", value=anime_stats_str, inline=False)
+        embed.add_field(name="Manga Statistics", value=manga_stats_str, inline=False)
     else:
-        embed = discord.Embed(
-            title="Not Found", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
 
@@ -861,7 +851,7 @@ async def show_users(ctx):
     # Split users
     s = []
     for i in range(0, int(len(result)) + 1, 20):
-        c = result[i: i + 20]
+        c = result[i : i + 20]
         if c != []:
             s.append(c)
     result = []
@@ -948,8 +938,7 @@ async def top(ctx, top_count=10, name=None):
 
     user_data = get_user(name)
     if user_data is not None:
-        variables = {"userId": user_data["id"],
-                     "page": 1, "perPage": top_count}
+        variables = {"userId": user_data["id"], "page": 1, "perPage": top_count}
 
         response = requests.post(
             URL, json={"query": QUERY_TOP_MEDIA, "variables": variables}
@@ -972,8 +961,7 @@ async def top(ctx, top_count=10, name=None):
         )
         embed.set_thumbnail(url=user_data["avatar"]["large"])
     else:
-        embed = discord.Embed(
-            title="Not Found", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
 
@@ -1093,8 +1081,7 @@ async def score(ctx, name, *media_name):
                     score["status"] = (
                         "Watching" if media["type"] == "ANIME" else "Reading"
                     )
-                embed.add_field(
-                    name="Status", value=score["status"].capitalize())
+                embed.add_field(name="Status", value=score["status"].capitalize())
                 embed.add_field(name="Progress", value=score["progress"])
             embed.set_thumbnail(url=user_data["avatar"]["large"])
         else:
@@ -1102,8 +1089,7 @@ async def score(ctx, name, *media_name):
                 title="Not found.", description="):", color=COLOR_DEFAULT
             )
     else:
-        embed = discord.Embed(title="Not found.",
-                              description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(title="Not found.", description="):", color=COLOR_DEFAULT)
     await ctx.send(embed=embed)
 
 
@@ -1146,7 +1132,8 @@ async def scores(ctx, media_type=None, *name):
         return
 
     if media is not None:
-        user_scores = get_users_statuses(media["id"], media["type"])
+        loc_users = users_glob[str(ctx.message.guild.id)]
+        user_scores = get_users_statuses(loc_users, media["id"], media["type"])
 
         if media["title"]["english"] is None:
             media["title"]["english"] = media["title"]["romaji"]
@@ -1173,8 +1160,7 @@ async def scores(ctx, media_type=None, *name):
             text=f'Dropped scores affect server score only if progress is {MIN_DROP_ANIME if media["type"] == "ANIME" else MIN_DROP_MANGA} or more.'
         )
     else:
-        embed = discord.Embed(title="Not found.",
-                              description="):", color=COLOR_ERROR)
+        embed = discord.Embed(title="Not found.", description="):", color=COLOR_ERROR)
 
     await ctx.send(embed=embed)
 
@@ -1368,8 +1354,7 @@ async def favorites(ctx, name=None):  # TODO: errors
         if studios != "":
             embed.add_field(name="Studios", value=studios, inline=False)
     else:
-        embed = discord.Embed(
-            title="Not Found", description="):", color=COLOR_DEFAULT)
+        embed = discord.Embed(title="Not Found", description="):", color=COLOR_DEFAULT)
 
     await ctx.send(embed=embed)
 
@@ -1474,8 +1459,7 @@ async def on_member_remove(member):
 @bot.event
 async def on_command_error(ctx, error):
     await ctx.message.add_reaction("❓")
-    traceback.print_exception(
-        type(error), error, error.__traceback__, file=sys.stderr)
+    traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
 
 # Run bot
